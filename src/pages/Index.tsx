@@ -12,42 +12,42 @@ const features = [
     icon: Eye,
     title: "Vision Radius",
     description:
-      "Виждаш само малък кръг около себе си. Мъглата постепенно се връща след твоя преход — напрежението е постоянно.",
+      "You only see a small circle around yourself. The fog slowly returns after you move — the tension is constant.",
     color: "hsl(var(--primary))",
   },
   {
     icon: Map,
     title: "Discovery Map",
     description:
-      "Картата се разкрива само там, където си стъпвал. Всяка нова зона носи нови тайни и скрити хора.",
+      "The map reveals only where you've walked. Every new zone brings new secrets and hidden people.",
     color: "hsl(42 75% 52%)",
   },
   {
     icon: MessageSquare,
-    title: "AI Подсказки",
+    title: "AI Hints",
     description:
-      "NPC-тата дават атмосферни, загадъчни подсказки. Никога преки координати — само намеци за посока и зона.",
+      "NPCs give atmospheric, cryptic hints. Never direct coordinates — only clues about direction and zone.",
     color: "hsl(260 60% 65%)",
   },
   {
     icon: Clock,
-    title: "Таймер & Score",
+    title: "Timer & Score",
     description:
-      "Намери всички преди времето да изтече. Броят подсказки и времето определят крайния резултат.",
+      "Find everyone before time runs out. Hints used and time remaining determine your final score.",
     color: "hsl(var(--destructive))",
   },
   {
     icon: Users,
     title: "Hide & Seek",
     description:
-      "Скриващите се хора са на случайни позиции при всеки нов рунд — картата никога не е същата.",
+      "Hidden people spawn at random positions each round — the map is never the same.",
     color: "hsl(142 50% 45%)",
   },
   {
     icon: Compass,
-    title: "Зони & Атмосфера",
+    title: "Zones & Atmosphere",
     description:
-      "Гора, село, руини и поле — всяка зона с уникална атмосфера, обекти и места за скриване.",
+      "Forest, village, ruins and field — each zone with a unique atmosphere, objects and hiding spots.",
     color: "hsl(30 65% 50%)",
   },
 ];
@@ -85,14 +85,14 @@ const ComingSoonModal = ({ onClose }: { onClose: () => void }) => (
         className="text-2xl font-bold mb-3 glow-text"
         style={{ fontFamily: "Cinzel, serif", color: "hsl(var(--foreground))" }}
       >
-        Играта е в разработка
+        Game In Development
       </h3>
       <p
         className="text-sm leading-relaxed mb-6"
         style={{ color: "hsl(var(--muted-foreground))", fontFamily: "Inter, sans-serif", fontWeight: 300 }}
       >
-        <em>Fog & Seek</em> се създава в Godot. Мъглата скоро ще те погълне —<br />
-        следи за обновления!
+        <em>Fog & Seek</em> is being built in Godot. The fog will consume you soon —<br />
+        stay tuned for updates!
       </p>
 
       <div className="flex flex-col gap-3">
@@ -103,14 +103,14 @@ const ComingSoonModal = ({ onClose }: { onClose: () => void }) => (
           className="btn-glow w-full py-3 rounded-lg text-xs tracking-widest uppercase"
           style={{ fontFamily: "Cinzel, serif", textDecoration: "none", display: "block" }}
         >
-          Следи на itch.io
+          Follow on itch.io
         </a>
         <button
           onClick={onClose}
           className="btn-outline-glow w-full py-3 rounded-lg text-xs tracking-widest uppercase"
           style={{ fontFamily: "Cinzel, serif" }}
         >
-          Затвори
+          Close
         </button>
       </div>
 
@@ -204,13 +204,7 @@ const Index = () => {
 
         {/* Hero content */}
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full" style={{ background: "hsl(var(--primary) / 0.1)", border: "1px solid hsl(var(--primary) / 0.3)" }}>
-            <div className="w-1.5 h-1.5 rounded-full animate-glow-pulse" style={{ background: "hsl(var(--primary))" }} />
-            <span className="text-xs tracking-widest uppercase" style={{ color: "hsl(var(--primary))", fontFamily: "Inter, sans-serif", fontWeight: 400 }}>
-              2D Top-Down · Godot · Discovery
-            </span>
-          </div>
+          {/* Badge removed */}
 
           <h1
             className="text-6xl md:text-8xl font-bold mb-2 glow-text"
@@ -238,9 +232,9 @@ const Index = () => {
             className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
             style={{ color: "hsl(var(--foreground) / 0.65)", fontWeight: 300 }}
           >
-            Светът е покрит с мъгла. Само малък кръг светлина те следва.
+            The world is shrouded in fog. Only a small circle of light follows you.
             <br />
-            <em>Намери всички скрити, преди тъмнината те погълне.</em>
+            <em>Find everyone hidden before the darkness swallows you.</em>
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -249,14 +243,14 @@ const Index = () => {
               className="btn-glow px-8 py-3.5 rounded-lg font-display text-sm tracking-widest uppercase"
               style={{ fontFamily: "Cinzel, serif" }}
             >
-              Играй Сега
+              Play Now
             </button>
             <button
               onClick={() => document.getElementById("mechanics")?.scrollIntoView({ behavior: "smooth" })}
               className="btn-outline-glow px-8 py-3.5 rounded-lg font-display text-sm tracking-widest uppercase"
               style={{ fontFamily: "Cinzel, serif" }}
             >
-              Научи Повече
+              Learn More
             </button>
           </div>
         </div>
@@ -275,20 +269,20 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <p className="text-xs tracking-widest uppercase mb-4" style={{ color: "hsl(var(--primary))", fontFamily: "Inter, sans-serif" }}>
-                — За Играта
+                — About the Game
               </p>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight" style={{ fontFamily: "Cinzel, serif", color: "hsl(var(--foreground))" }}>
-                Отkriй света{" "}
-                <span className="text-gradient-cyan">стъпка по стъпка</span>
+                Discover the world{" "}
+                <span className="text-gradient-cyan">step by step</span>
               </h2>
               <p className="text-base leading-relaxed mb-6" style={{ color: "hsl(var(--foreground) / 0.6)", fontWeight: 300 }}>
-                В <strong style={{ color: "hsl(var(--primary))", fontWeight: 400 }}>Fog & Seek</strong>, целият свят е обвит в мъгла. Виждаш само малък кръг около себе си. Когато се отдалечиш, мъглата бавно се завръща — никога не знаеш какво те чака зад следващия ъгъл.
+                In <strong style={{ color: "hsl(var(--primary))", fontWeight: 400 }}>Fog & Seek</strong>, the entire world is shrouded in fog. You only see a small circle around yourself. As you move away, the fog slowly returns — you never know what awaits around the next corner.
               </p>
               <p className="text-base leading-relaxed mb-8" style={{ color: "hsl(var(--foreground) / 0.6)", fontWeight: 300 }}>
-                Твоята цел: намери всички скрити хора на картата. NPC-тата ти дават мистериозни подсказки, но координати — никога. Темата е <em style={{ color: "hsl(var(--accent))" }}>Discovery</em> — не просто търсиш хора, а постепенно разкриваш света.
+                Your goal: find all hidden people on the map. NPCs give you mysterious hints, but never coordinates. The theme is <em style={{ color: "hsl(var(--accent))" }}>Discovery</em> — you're not just finding people, you're gradually uncovering the world.
               </p>
               <div className="flex flex-wrap gap-3">
-                {["Изследване", "Мъгла", "AI Подсказки", "Discovery", "Напрежение"].map((tag) => (
+                {["Exploration", "Fog", "AI Hints", "Discovery", "Tension"].map((tag) => (
                   <span
                     key={tag}
                     className="text-xs px-3 py-1 rounded-full"
@@ -329,10 +323,10 @@ const Index = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-xs tracking-widest uppercase mb-4" style={{ color: "hsl(var(--primary))", fontFamily: "Inter, sans-serif" }}>
-              — Механики
+              — Mechanics
             </p>
             <h2 className="text-4xl md:text-5xl font-bold" style={{ fontFamily: "Cinzel, serif", color: "hsl(var(--foreground))" }}>
-              Как се играе
+              How to Play
             </h2>
           </div>
 
@@ -368,22 +362,22 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
             <div>
               <p className="text-xs tracking-widest uppercase mb-4" style={{ color: "hsl(var(--accent))", fontFamily: "Inter, sans-serif" }}>
-                — Картата
+                — The Map
               </p>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight" style={{ fontFamily: "Cinzel, serif", color: "hsl(var(--foreground))" }}>
-                Четири зони,{" "}
-                <span className="text-gradient-amber">безкрайни тайни</span>
+                Four zones,{" "}
+                <span className="text-gradient-amber">endless secrets</span>
               </h2>
               <p className="text-base leading-relaxed mb-8" style={{ color: "hsl(var(--foreground) / 0.6)", fontWeight: 300 }}>
-                Картата е разделена на различни зони с уникален характер и атмосфера. Всяка зона съдържа обекти, зад които могат да се крият хора — и всяка рунд скриващите се появяват на нови, случайни места.
+                The map is divided into distinct zones with unique character and atmosphere. Each zone contains objects behind which people can hide — and every round the hidden ones appear in new, random spots.
               </p>
 
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4 mb-8">
                 {[
-                  { value: "4", label: "Зони" },
-                  { value: "∞", label: "Рандомност" },
-                  { value: "AI", label: "Подсказки" },
+                  { value: "4", label: "Zones" },
+                  { value: "∞", label: "Randomness" },
+                  { value: "AI", label: "Hints" },
                 ].map((stat) => (
                   <div key={stat.label} className="text-center p-4 rounded-lg" style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))" }}>
                     <div className="text-2xl font-bold mb-1" style={{ fontFamily: "Cinzel, serif", color: "hsl(var(--primary))" }}>
@@ -412,14 +406,14 @@ const Index = () => {
         />
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-xs tracking-widest uppercase mb-4" style={{ color: "hsl(var(--primary))", fontFamily: "Inter, sans-serif" }}>
-            — AI Система
+            — AI System
           </p>
           <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: "Cinzel, serif", color: "hsl(var(--foreground))" }}>
-            Подсказки от{" "}
-            <span className="text-gradient-cyan">сенките</span>
+            Hints from{" "}
+            <span className="text-gradient-cyan">the shadows</span>
           </h2>
           <p className="text-base leading-relaxed mb-12" style={{ color: "hsl(var(--foreground) / 0.6)", fontWeight: 300 }}>
-            NPC-тата анализират реалната позиция на скрития спрямо теб — посока, дистанция, тип зона, близки обекти. Резултатът: атмосферни, загадъчни подсказки, които те водят без да те отведат директно.
+            NPCs analyse the real position of the hidden person relative to you — direction, distance, zone type, nearby objects. The result: atmospheric, cryptic hints that guide you without giving it away directly.
           </p>
 
           <div className="max-w-xl mx-auto mb-12">
@@ -428,9 +422,9 @@ const Index = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
             {[
-              { icon: "🧭", label: "Посока", desc: "Север, юг, изток, запад — никога точни координати" },
-              { icon: "📏", label: "Дистанция", desc: "Близо, далеч, много далеч — приблизително" },
-              { icon: "🌲", label: "Зона & Обект", desc: "До гората, до изоставената къща, край скалите" },
+              { icon: "🧭", label: "Direction", desc: "North, south, east, west — never exact coordinates" },
+              { icon: "📏", label: "Distance", desc: "Close, far, very far — approximate only" },
+              { icon: "🌲", label: "Zone & Object", desc: "Near the forest, by the abandoned cabin, among the rocks" },
             ].map((item) => (
               <div key={item.label} className="card-atmospheric rounded-xl p-5">
                 <div className="text-2xl mb-3">{item.icon}</div>
@@ -454,12 +448,12 @@ const Index = () => {
         <FogParticles />
         <div className="relative z-10 max-w-2xl mx-auto text-center">
           <h2 className="text-5xl md:text-6xl font-bold mb-6" style={{ fontFamily: "Cinzel, serif" }}>
-            <span className="glow-text" style={{ color: "hsl(var(--foreground))" }}>Готов ли си</span>
+            <span className="glow-text" style={{ color: "hsl(var(--foreground))" }}>Are you ready</span>
             <br />
-            <span className="text-gradient-cyan">да откриеш?</span>
+            <span className="text-gradient-cyan">to discover?</span>
           </h2>
           <p className="text-lg mb-10 leading-relaxed" style={{ color: "hsl(var(--foreground) / 0.55)", fontWeight: 300 }}>
-            Мъглата те чака. Някъде там, в тъмнината,<br /> се крие нещо, което трябва да намериш.
+            The fog is waiting. Somewhere out there, in the darkness,<br /> something hides that you must find.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
@@ -467,7 +461,7 @@ const Index = () => {
               className="btn-glow px-10 py-4 rounded-lg font-display text-sm tracking-widest uppercase animate-glow-pulse"
               style={{ fontFamily: "Cinzel, serif" }}
             >
-              Влез в Мъглата
+              Enter the Fog
             </button>
             <button
               className="btn-outline-glow px-10 py-4 rounded-lg font-display text-sm tracking-widest uppercase"
@@ -494,7 +488,7 @@ const Index = () => {
             </span>
           </div>
           <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))", fontFamily: "Inter, sans-serif" }}>
-            Създадено с Godot · Тема: Discovery · 2D Top-Down
+            Built with Godot · Theme: Discovery · 2D Top-Down
           </p>
         </div>
       </footer>
