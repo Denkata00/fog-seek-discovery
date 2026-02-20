@@ -2,32 +2,32 @@ import { Eye, EyeOff } from "lucide-react";
 
 const zones = [
   {
-    name: "Мистериозната Гора",
+    name: "The Mysterious Forest",
     icon: "🌲",
     color: "hsl(142 50% 35%)",
-    description: "Тъмни дървета и гъсти храсти. Идеалното място за криеница.",
-    items: ["Стари дъбове", "Гъсти храсти", "Паднали стволове"],
+    description: "Dark trees and dense bushes. The perfect place to hide.",
+    items: ["Old Oaks", "Dense Bushes", "Fallen Trunks"],
   },
   {
-    name: "Изоставеното Село",
+    name: "The Abandoned Village",
     icon: "🏚️",
     color: "hsl(30 40% 35%)",
-    description: "Полуразрушени постройки и тъмни ъгли зад всяка врата.",
-    items: ["Стари колиби", "Воденица", "Кладенец"],
+    description: "Half-ruined buildings and dark corners behind every door.",
+    items: ["Old Cabins", "Old Mill", "The Well"],
   },
   {
-    name: "Древните Руини",
+    name: "The Ancient Ruins",
     icon: "🏛️",
     color: "hsl(260 30% 45%)",
-    description: "Останки от минали времена. Тайни в камъните.",
-    items: ["Каменни стени", "Тъмни подземия", "Стари арки"],
+    description: "Remnants of past times. Secrets hidden in the stones.",
+    items: ["Stone Walls", "Dark Arches", "Old Passages"],
   },
   {
-    name: "Открито Поле",
+    name: "The Open Field",
     icon: "🌾",
     color: "hsl(55 50% 38%)",
-    description: "Не се лъжи — мъглата крие всичко дори тук.",
-    items: ["Висока трева", "Скали", "Изоставени коли"],
+    description: "Don't be fooled — the fog hides everything even here.",
+    items: ["Tall Grass", "Rocks", "Abandoned Cart"],
   },
 ];
 

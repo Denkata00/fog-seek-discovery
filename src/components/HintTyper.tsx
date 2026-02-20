@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 
 const hints = [
-  "Чух шум от стъпки близо до изоставената къща…",
-  "Мъглата е по-гъста на север, сякаш някой се крие там.",
-  "Някой се крие близо до нещо високо… може би дърво.",
-  "Усетих студено дъхание откъм западните руини.",
-  "Тревата е смачкана — нечии крака са минавали наскоро.",
-  "В мъглата се чуха далечни шепоти откъм гората.",
-  "Птиците замлъкнаха на изток. Нещо ги е изплашило.",
-  "Сенки танцуват зад старата воденица — не са от вятъра.",
+  "I heard footsteps near the abandoned cabin…",
+  "The fog is thicker to the north, as if someone is hiding there.",
+  "Someone is hiding near something tall… perhaps a tree.",
+  "I felt a cold breath coming from the western ruins.",
+  "The grass is trampled — someone's feet passed through recently.",
+  "Distant whispers echoed through the fog from the forest.",
+  "The birds fell silent to the east. Something frightened them.",
+  "Shadows dance behind the old mill — not from the wind.",
 ];
 
 const HintTyper = () => {
@@ -43,7 +43,7 @@ const HintTyper = () => {
       <div className="absolute top-3 left-4 flex gap-1.5">
         <div className="w-2 h-2 rounded-full" style={{ background: "hsl(var(--primary) / 0.6)" }} />
         <span className="text-xs font-body" style={{ color: "hsl(var(--primary))", fontFamily: "Inter, sans-serif", fontWeight: 300 }}>
-          NPC Подсказка
+          NPC Hint
         </span>
       </div>
       <p
