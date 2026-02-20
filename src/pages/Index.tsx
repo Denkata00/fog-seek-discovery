@@ -5,6 +5,7 @@ import HintTyper from "@/components/HintTyper";
 import ZoneCards from "@/components/ZoneCards";
 import { Eye, Map, MessageSquare, Clock, Users, Compass, ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const features = [
   {
@@ -136,6 +137,7 @@ const ComingSoonModal = ({ onClose }: { onClose: () => void }) => (
 
 const Index = () => {
   const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
   return (
     <div
       className="min-h-screen relative"
@@ -243,7 +245,7 @@ const Index = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => setShowModal(true)}
+              onClick={() => navigate("/game")}
               className="btn-glow px-8 py-3.5 rounded-lg font-display text-sm tracking-widest uppercase"
               style={{ fontFamily: "Cinzel, serif" }}
             >
@@ -461,6 +463,7 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
+              onClick={() => navigate("/game")}
               className="btn-glow px-10 py-4 rounded-lg font-display text-sm tracking-widest uppercase animate-glow-pulse"
               style={{ fontFamily: "Cinzel, serif" }}
             >
