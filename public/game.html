@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bg">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -246,16 +246,16 @@
   </div>
 
   <div id="hud-legend">
-    <div class="legend-row"><div class="legend-dot" style="background:#0dceba;box-shadow:0 0 6px #0dceba"></div><span class="legend-label">Ти</span></div>
-    <div class="legend-row"><div class="legend-dot" style="background:#f5c842;box-shadow:0 0 6px #f5c842"></div><span class="legend-label">Скрит (близо!)</span></div>
-    <div class="legend-row"><div class="legend-dot" style="background:#bb99ff;box-shadow:0 0 6px #bb99ff"></div><span class="legend-label">NPC (E = говори)</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:#0dceba;box-shadow:0 0 6px #0dceba"></div><span class="legend-label">You</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:#f5c842;box-shadow:0 0 6px #f5c842"></div><span class="legend-label">Hidden (close!)</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:#bb99ff;box-shadow:0 0 6px #bb99ff"></div><span class="legend-label">NPC (E = talk)</span></div>
   </div>
 </div>
 
 <!-- ===== INTERACT PROMPT ===== -->
 <div id="interact-prompt">
   <span class="e-badge" id="e-badge">E</span>
-  <span id="interact-text">Говори с NPC</span>
+  <span id="interact-text">Talk to NPC</span>
 </div>
 
 <!-- ===== JUST FOUND ===== -->
@@ -267,10 +267,10 @@
     <div class="dialog-header">
       <div class="dialog-dot"></div>
       <span class="dialog-name" id="dialog-name">NPC</span>
-      <span class="dialog-close-hint">Esc / E за затваряне</span>
+      <span class="dialog-close-hint">Esc / E to close</span>
     </div>
     <p class="dialog-text" id="dialog-text"></p>
-    <button class="dialog-btn" id="dialog-close-btn">Затвори</button>
+    <button class="dialog-btn" id="dialog-close-btn">Close</button>
   </div>
 </div>
 
@@ -295,17 +295,17 @@
     <div class="game-title">FOG &amp; SEEK</div>
     <div class="game-subtitle">2D Top-Down · Discovery</div>
     <div class="keys-list">
-      <div class="row"><span class="key-badge">WASD / ↑↓←→</span><span class="key-desc">Движение</span></div>
-      <div class="row"><span class="key-badge">E</span><span class="key-desc">Намери скрит / Говори с NPC</span></div>
-      <div class="row"><span class="key-badge">Esc</span><span class="key-desc">Затвори диалог</span></div>
+      <div class="row"><span class="key-badge">WASD / ↑↓←→</span><span class="key-desc">Move</span></div>
+      <div class="row"><span class="key-badge">E</span><span class="key-desc">Find hidden / Talk to NPC</span></div>
+      <div class="row"><span class="key-badge">Esc</span><span class="key-desc">Close dialog</span></div>
     </div>
     <p class="hint-text">
-      Намери <strong>5 скрити хора</strong> преди времето да изтече.<br>
-      Говори с <span class="npc-color">NPC (лилави)</span> за подсказки.<br>
-      Жълтите фигури се виждат само много близо!
+      Find <strong>5 hidden people</strong> before time runs out.<br>
+      Talk to <span class="npc-color">NPCs (purple)</span> for hints.<br>
+      Yellow figures are only visible up close!
     </p>
-    <button class="btn-glow" id="start-btn">Влез в Мъглата</button>
-    <button class="btn-outline" id="back-btn">← Назад</button>
+    <button class="btn-glow" id="start-btn">Enter the Fog</button>
+    <button class="btn-outline" id="back-btn">← Back</button>
   </div>
 </div>
 
@@ -313,15 +313,15 @@
 <div class="overlay" id="won-screen" style="display:none">
   <div class="panel">
     <div class="end-icon">🎉</div>
-    <div class="end-title" style="color:#44ff88;text-shadow:0 0 20px #44ff88">Победа!</div>
-    <div class="end-subtitle">Намери всички 5 скрити хора!</div>
+    <div class="end-title" style="color:#44ff88;text-shadow:0 0 20px #44ff88">Victory!</div>
+    <div class="end-subtitle">You found all 5 hidden people!</div>
     <div class="stats-grid">
-      <div class="stat-box"><div class="stat-val" style="color:#0dceba" id="won-time">--</div><div class="stat-label">Останало</div></div>
-      <div class="stat-box"><div class="stat-val" style="color:#bb99ff" id="won-hints">--</div><div class="stat-label">Подсказки</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#0dceba" id="won-time">--</div><div class="stat-label">Time Left</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#bb99ff" id="won-hints">--</div><div class="stat-label">Hints Used</div></div>
     </div>
-    <div class="score-box"><div class="score-val" id="won-score">0</div><div class="score-label">Точки</div></div>
-    <button class="btn-glow" id="won-restart">Нова игра</button>
-    <button class="btn-outline" id="won-back">← Начало</button>
+    <div class="score-box"><div class="score-val" id="won-score">0</div><div class="score-label">Score</div></div>
+    <button class="btn-glow" id="won-restart">Play Again</button>
+    <button class="btn-outline" id="won-back">← Home</button>
   </div>
 </div>
 
@@ -329,10 +329,10 @@
 <div class="overlay" id="lost-screen" style="display:none">
   <div class="panel">
     <div class="end-icon">🌫️</div>
-    <div class="end-title" style="color:#ff6666;text-shadow:0 0 20px #ff4444">Мъглата те погълна</div>
-    <div class="end-subtitle">Намерени: <strong id="lost-found">0</strong> от 5</div>
-    <button class="btn-glow" id="lost-restart">Опитай пак</button>
-    <button class="btn-outline" id="lost-back">← Начало</button>
+    <div class="end-title" style="color:#ff6666;text-shadow:0 0 20px #ff4444">The Fog Consumed You</div>
+    <div class="end-subtitle">Found: <strong id="lost-found">0</strong> of 5</div>
+    <button class="btn-glow" id="lost-restart">Try Again</button>
+    <button class="btn-outline" id="lost-back">← Home</button>
   </div>
 </div>
 
@@ -350,12 +350,12 @@ const GAME_DURATION = 300;
 // ============================================================
 //  MAP DATA
 // ============================================================
-const ZONE_NAMES = ['гората','селото','руините','полето'];
+const ZONE_NAMES = ['the forest','the village','the ruins','the field'];
 const ZONE_FEATURES = [
-  ['стари дъбове','гъсти храсти','паднал ствол'],
-  ['изоставената колиба','старата воденица','кладенеца'],
-  ['каменните стени','старите арки','тъмния ъгъл'],
-  ['скалите','високата трева','изоставената каруца'],
+  ['old oaks','dense bushes','fallen trunk'],
+  ['abandoned cabin','old mill','the well'],
+  ['stone walls','old arches','dark corner'],
+  ['the rocks','tall grass','abandoned cart'],
 ];
 
 function getZone(x, y) {
@@ -371,10 +371,10 @@ const HIDDEN_SPAWN = [
 ];
 
 const NPCS = [
-  {id:0,x:750,y:430,zone:0,name:'Стар Ловец'},
-  {id:1,x:1450,y:580,zone:1,name:'Странникът'},
-  {id:2,x:380,y:1240,zone:2,name:'Пазачът'},
-  {id:3,x:1720,y:1180,zone:3,name:'Отшелникът'},
+  {id:0,x:750,y:430,zone:0,name:'Old Hunter'},
+  {id:1,x:1450,y:580,zone:1,name:'The Wanderer'},
+  {id:2,x:380,y:1240,zone:2,name:'The Warden'},
+  {id:3,x:1720,y:1180,zone:3,name:'The Hermit'},
 ];
 
 // ============================================================
@@ -427,22 +427,22 @@ function generateHint(player, target) {
   const dx = target.x - player.x, dy = target.y - player.y;
   const dist = Math.sqrt(dx*dx + dy*dy);
   const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-  const dirs = ['изток','югоизток','юг','югозапад','запад','северозапад','север','североизток'];
+  const dirs = ['east','southeast','south','southwest','west','northwest','north','northeast'];
   const dirIdx = ((Math.round((angle + 180) / 45)) % 8 + 8) % 8;
   const dir = dirs[dirIdx];
-  const distStr = dist > 900 ? 'много далеч' : dist > 500 ? 'далеч' : dist > 250 ? 'наблизо' : 'много близо';
+  const distStr = dist > 900 ? 'very far' : dist > 500 ? 'far' : dist > 250 ? 'nearby' : 'very close';
   const zone = ZONE_NAMES[target.zone];
   const feats = ZONE_FEATURES[target.zone];
   const feat = feats[Math.floor(Math.random() * feats.length)];
   const templates = [
-    `Чух шум откъм ${dir}… ${distStr}, близо до ${feat} в ${zone}.`,
-    `Мъглата е по-гъста на ${dir}. Погледни до ${feat}.`,
-    `Стъпки на ${dir}, ${distStr}… в ${zone}.`,
-    `Усетих дъхание откъм ${dir}. Близо до ${feat}.`,
-    `В ${zone} на ${dir}, ${distStr} — до ${feat}.`,
-    `Птиците замлъкнаха на ${dir}. Нещо се крие до ${feat}.`,
-    `Тревата е смачкана на ${dir}, ${distStr} от тук.`,
-    `Сенки се движат в ${zone}, на ${dir}. Търси до ${feat}.`,
+    `I heard a sound to the ${dir}… ${distStr}, near ${feat} in ${zone}.`,
+    `The fog is thicker to the ${dir}. Look near ${feat}.`,
+    `Footsteps to the ${dir}, ${distStr}… in ${zone}.`,
+    `I felt a breath from the ${dir}. Near ${feat}.`,
+    `In ${zone} to the ${dir}, ${distStr} — near ${feat}.`,
+    `The birds went silent to the ${dir}. Something hides near ${feat}.`,
+    `The grass is trampled to the ${dir}, ${distStr} from here.`,
+    `Shadows move in ${zone}, to the ${dir}. Search near ${feat}.`,
   ];
   return templates[Math.floor(Math.random() * templates.length)];
 }
@@ -614,7 +614,7 @@ function interact() {
     nearHidden.found = true;
     foundCount++;
     updateHUD();
-    showJustFound(`Намерен! (${foundCount}/5)`);
+    showJustFound(`Found! (${foundCount}/5)`);
     if (foundCount >= 5) {
       setTimeout(() => endGame('won'), 600);
     }
@@ -681,11 +681,11 @@ function updateInteractPrompt() {
     if (nearHidden) {
       badge.style.background = '#f5c84222'; badge.style.color = '#f5c842';
       el.style.borderColor = '#f5c84288';
-      text.textContent = 'Намерен! Натисни E';
+      text.textContent = 'Found! Press E';
     } else {
       badge.style.background = '#9966ff22'; badge.style.color = '#bb99ff';
       el.style.borderColor = '#9966ff88';
-      text.textContent = 'Говори с NPC';
+      text.textContent = 'Talk to NPC';
     }
   } else {
     el.classList.remove('show');
@@ -800,8 +800,8 @@ function loop(ts) {
   // Zone labels
   ctx.font = 'bold 28px "Cinzel", serif'; ctx.textAlign = 'center';
   ctx.globalAlpha = 0.06; ctx.fillStyle = '#ffffff';
-  ctx.fillText('ГОРА', 600-cx, 450-cy); ctx.fillText('СЕЛО', 1800-cx, 450-cy);
-  ctx.fillText('РУИНИ', 600-cx, 1350-cy); ctx.fillText('ПОЛЕ', 1800-cx, 1350-cy);
+  ctx.fillText('FOREST', 600-cx, 450-cy); ctx.fillText('VILLAGE', 1800-cx, 450-cy);
+  ctx.fillText('RUINS', 600-cx, 1350-cy); ctx.fillText('FIELD', 1800-cx, 1350-cy);
   ctx.globalAlpha = 1;
 
   // Map objects
