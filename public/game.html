@@ -221,6 +221,44 @@
     background:rgba(5,10,18,0.8);
   }
   #minimap canvas { width:100%; height:100%; }
+
+  /* ===== YOUTUBE INTRO ===== */
+  #yt-overlay {
+    position:fixed; inset:0; z-index:100;
+    background:rgba(5,10,18,0.97);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:20px;
+  }
+  #yt-overlay.hidden { display:none; }
+  .yt-label {
+    font-family:'Cinzel',serif; font-size:13px; letter-spacing:3px;
+    color:hsl(185 80% 52%); text-transform:uppercase;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .yt-title {
+    font-family:'Cinzel',serif; font-size:22px; font-weight:700;
+    color:#e8f4f8; text-shadow:0 0 20px hsl(185 80% 52%/0.5);
+    text-align:center; margin-bottom:4px;
+  }
+  .yt-artist { font-size:13px; color:hsl(185 80% 52%); letter-spacing:2px; text-align:center; margin-bottom:8px; }
+  .yt-frame-wrap {
+    position:relative; width:min(640px,90vw); border-radius:12px; overflow:hidden;
+    border:1px solid hsl(185 80% 52%/0.3);
+    box-shadow:0 0 60px hsl(185 80% 52%/0.2);
+    aspect-ratio:16/9;
+  }
+  .yt-frame-wrap iframe { position:absolute; inset:0; width:100%; height:100%; border:none; }
+  .yt-skip {
+    padding:11px 32px; border-radius:8px; cursor:pointer;
+    font-family:'Cinzel',serif; font-size:12px; letter-spacing:3px;
+    text-transform:uppercase; font-weight:700;
+    background:linear-gradient(135deg,hsl(185 80% 38%),hsl(185 80% 28%));
+    color:hsl(185 80% 88%); border:none;
+    box-shadow:0 0 18px hsl(185 80% 52%/0.35);
+    transition:box-shadow .2s,transform .1s;
+  }
+  .yt-skip:hover { box-shadow:0 0 28px hsl(185 80% 52%/0.55); transform:translateY(-1px); }
+  .yt-skip-hint { font-size:11px; color:hsl(218 20% 40%); }
 </style>
 </head>
 <body>
@@ -288,6 +326,23 @@
 <!-- ===== MINIMAP ===== -->
 <div id="minimap"><canvas id="minimapCanvas"></canvas></div>
 
+<!-- ===== YOUTUBE INTRO ===== -->
+<div id="yt-overlay">
+  <div class="yt-label">🎵 Now Playing</div>
+  <div class="yt-title">Set Trope</div>
+  <div class="yt-artist">Azis</div>
+  <div class="yt-frame-wrap">
+    <iframe
+      id="yt-iframe"
+      src="https://www.youtube.com/embed/7J3TbNpDCXc?autoplay=1&rel=0&modestbranding=1"
+      allow="autoplay; encrypted-media"
+      allowfullscreen
+    ></iframe>
+  </div>
+  <button class="yt-skip" id="yt-skip-btn">Enter the Fog →</button>
+  <span class="yt-skip-hint">or press any key to skip</span>
+</div>
+
 <!-- ===== START SCREEN ===== -->
 <div class="overlay" id="start-screen">
   <div class="panel">
@@ -337,6 +392,28 @@
 </div>
 
 <script>
+// ============================================================
+//  YOUTUBE INTRO
+// ============================================================
+(function() {
+  const ytOverlay = document.getElementById('yt-overlay');
+  const ytSkipBtn = document.getElementById('yt-skip-btn');
+  const ytIframe  = document.getElementById('yt-iframe');
+
+  function closeYT() {
+    ytIframe.src = '';
+    ytOverlay.classList.add('hidden');
+    document.removeEventListener('keydown', onKey);
+  }
+
+  function onKey(e) {
+    if (['Shift','Control','Alt','Meta'].includes(e.key)) return;
+    closeYT();
+  }
+
+  ytSkipBtn.addEventListener('click', closeYT);
+  document.addEventListener('keydown', onKey);
+})();
 // ============================================================
 //  CONSTANTS
 // ============================================================
