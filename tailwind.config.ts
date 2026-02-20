@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ["Cinzel", "serif"],
+        body: ["Inter", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -47,6 +51,16 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        fog: {
+          dark: "hsl(var(--fog-dark))",
+          mid: "hsl(var(--fog-mid))",
+        },
+        cyan: {
+          glow: "hsl(var(--glow-cyan))",
+        },
+        amber: {
+          glow: "hsl(var(--glow-amber))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -65,25 +79,28 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      backgroundImage: {
+        "gradient-fog": "var(--gradient-fog)",
+        "gradient-hero": "var(--gradient-hero)",
+        "gradient-card": "var(--gradient-card)",
+      },
+      boxShadow: {
+        glow: "0 0 40px hsl(185 80% 52% / 0.35), 0 0 80px hsl(185 80% 52% / 0.15)",
+        "glow-sm": "0 0 15px hsl(185 80% 52% / 0.4), 0 0 30px hsl(185 80% 52% / 0.2)",
+        amber: "0 0 20px hsl(42 75% 52% / 0.4)",
+        atmospheric: "0 4px 24px hsl(218 45% 2% / 0.8)",
       },
     },
   },
