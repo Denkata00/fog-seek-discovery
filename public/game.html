@@ -259,6 +259,15 @@
   }
   .yt-skip:hover { box-shadow:0 0 28px hsl(185 80% 52%/0.55); transform:translateY(-1px); }
   .yt-skip-hint { font-size:11px; color:hsl(218 20% 40%); }
+  .yt-countdown {
+    font-family:'Cinzel',serif; font-size:32px; font-weight:700;
+    color:hsl(185 80% 52%);
+    text-shadow:0 0 20px hsl(185 80% 52%/0.6);
+    width:56px; height:56px; border-radius:50%;
+    border:2px solid hsl(185 80% 52%/0.4);
+    display:flex; align-items:center; justify-content:center;
+    animation: pulse 1s ease-in-out infinite;
+  }
 </style>
 </head>
 <body>
@@ -334,15 +343,14 @@
   <div class="yt-frame-wrap">
     <iframe
       id="yt-iframe"
-      src="https://www.youtube-nocookie.com/embed/qmYdqDOZZ2M?autoplay=1&rel=0&modestbranding=1&enablejsapi=1"
+      src="https://www.youtube-nocookie.com/embed/qmYdqDOZZ2M?autoplay=1&start=30&end=35&rel=0&modestbranding=1&controls=0&disablekb=1"
       title="Azis - Sen Trope"
       frameborder="0"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
       allowfullscreen
     ></iframe>
   </div>
-  <button class="yt-skip" id="yt-skip-btn">Enter the Fog →</button>
-  <span class="yt-skip-hint">or press any key to skip</span>
+  <div class="yt-countdown" id="yt-countdown">5</div>
 </div>
 
 <!-- ===== START SCREEN ===== -->
@@ -399,22 +407,24 @@
 // ============================================================
 (function() {
   const ytOverlay = document.getElementById('yt-overlay');
-  const ytSkipBtn = document.getElementById('yt-skip-btn');
   const ytIframe  = document.getElementById('yt-iframe');
+  const ytCountdown = document.getElementById('yt-countdown');
 
   function closeYT() {
     ytIframe.src = '';
     ytOverlay.classList.add('hidden');
-    document.removeEventListener('keydown', onKey);
   }
 
-  function onKey(e) {
-    if (['Shift','Control','Alt','Meta'].includes(e.key)) return;
-    closeYT();
-  }
-
-  ytSkipBtn.addEventListener('click', closeYT);
-  document.addEventListener('keydown', onKey);
+  // Countdown display
+  let remaining = 5;
+  const tick = setInterval(function() {
+    remaining--;
+    if (ytCountdown) ytCountdown.textContent = remaining;
+    if (remaining <= 0) {
+      clearInterval(tick);
+      closeYT();
+    }
+  }, 1000);
 })();
 // ============================================================
 //  CONSTANTS
