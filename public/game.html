@@ -213,6 +213,45 @@
   .score-val { font-family:'Cinzel',serif; font-size:32px; font-weight:700; color:#44ff88; }
   .score-label { font-size:11px; color:hsl(218 20% 50%); margin-top:4px; }
 
+  /* ===== YOUTUBE INTRO ===== */
+  #yt-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: #050a12;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 0;
+  }
+  .yt-label {
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 3px;
+    color: hsl(185 80% 52% / 0.6); text-transform: uppercase; margin-bottom: 8px;
+  }
+  .yt-title {
+    font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700;
+    color: #e8f4f8; text-shadow: 0 0 20px hsl(185 80% 52% / 0.4);
+    margin-bottom: 2px; text-align: center;
+  }
+  .yt-artist {
+    font-size: 12px; color: hsl(218 20% 50%); margin-bottom: 20px; text-align: center;
+  }
+  .yt-frame-wrap {
+    width: min(560px, 90vw); aspect-ratio: 16/9;
+    border-radius: 12px; overflow: hidden;
+    border: 1px solid hsl(185 80% 52% / 0.25);
+    box-shadow: 0 0 40px hsl(185 80% 52% / 0.12);
+    margin-bottom: 20px;
+  }
+  .yt-frame-wrap iframe { width: 100%; height: 100%; display: block; border: none; }
+  .yt-skip {
+    padding: 10px 28px; border-radius: 8px; cursor: pointer;
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    background: transparent; color: hsl(185 80% 62%);
+    border: 1px solid hsl(185 80% 52% / 0.35);
+    transition: border-color .2s, color .2s;
+  }
+  .yt-skip:hover { border-color: hsl(185 80% 52% / 0.7); color: hsl(185 80% 72%); }
+  .yt-skip-hint { font-size: 10px; color: hsl(218 20% 38%); margin-top: 10px; }
+  .yt-countdown { color: hsl(185 80% 52%); font-weight: 700; }
+
   /* ===== MINIMAP ===== */
   #minimap {
     position:absolute; bottom:16px; left:16px; z-index:10;
@@ -225,6 +264,21 @@
 </style>
 </head>
 <body>
+
+<!-- ===== YOUTUBE INTRO ===== -->
+<div id="yt-overlay">
+  <div class="yt-label">Now Playing</div>
+  <div class="yt-title">Fog &amp; Seek</div>
+  <div class="yt-artist">Atmospheric Intro</div>
+  <div class="yt-frame-wrap">
+    <iframe id="yt-iframe"
+      src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=0&controls=1"
+      allow="autoplay; encrypted-media" allowfullscreen>
+    </iframe>
+  </div>
+  <button class="yt-skip" onclick="closeYT()">Skip Intro</button>
+  <div class="yt-skip-hint">Auto-skipping in <span class="yt-countdown" id="yt-countdown">10</span>s</div>
+</div>
 
 <!-- ===== CANVAS ===== -->
 <canvas id="gameCanvas"></canvas>
@@ -922,6 +976,26 @@ document.getElementById('won-back').addEventListener('click', () => window.paren
 document.getElementById('lost-restart').addEventListener('click', startGame);
 document.getElementById('lost-back').addEventListener('click', () => window.parent.postMessage('navigate-home', '*'));
 document.getElementById('dialog-close-btn').addEventListener('click', closeDialog);
+
+// YOUTUBE INTRO
+(function () {
+  const ytOverlay = document.getElementById('yt-overlay');
+  const ytIframe  = document.getElementById('yt-iframe');
+  const ytCountdown = document.getElementById('yt-countdown');
+
+  function closeYT() {
+    ytIframe.src = '';          // stop video / network request
+    ytOverlay.style.display = 'none';
+  }
+  window.closeYT = closeYT;    // expose for inline onclick
+
+  let secs = 10;
+  const iv = setInterval(() => {
+    secs--;
+    if (ytCountdown) ytCountdown.textContent = secs;
+    if (secs <= 0) { clearInterval(iv); closeYT(); }
+  }, 1000);
+})();
 
 // ============================================================
 //  RENDER LOOP (start screen static render)
