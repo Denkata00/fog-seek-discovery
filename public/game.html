@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fog & Seek</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #050a12;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    color: #cdd9e5;
+  }
+
+  canvas { position: absolute; top: 0; left: 0; display: block; }
+
+  /* ===== OVERLAY BASE ===== */
+  .overlay {
+    position: absolute; inset: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(5,10,18,0.88);
+    backdrop-filter: blur(6px);
+  }
+  .panel {
+    background: hsl(218 40% 7%);
+    border-radius: 16px;
+    padding: 40px 32px;
+    max-width: 400px; width: 90%;
+    text-align: center;
+  }
+
+  /* ===== BUTTONS ===== */
+  .btn-glow {
+    display: block; width: 100%;
+    padding: 13px;
+    border: none; border-radius: 8px; cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 12px; letter-spacing: 3px; text-transform: uppercase; font-weight: 700;
+    background: linear-gradient(135deg, hsl(185 80% 38%), hsl(185 80% 28%));
+    color: hsl(185 80% 88%);
+    box-shadow: 0 0 18px hsl(185 80% 52% / 0.35), inset 0 1px 0 hsl(185 80% 70% / 0.15);
+    transition: box-shadow .2s, transform .1s;
+    margin-bottom: 8px;
+  }
+  .btn-glow:hover { box-shadow: 0 0 28px hsl(185 80% 52% / 0.55); transform: translateY(-1px); }
+
+  .btn-outline {
+    display: block; width: 100%;
+    padding: 10px;
+    border: 1px solid hsl(185 80% 52% / 0.35); border-radius: 8px; cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    background: transparent; color: hsl(185 80% 62%);
+    transition: border-color .2s, color .2s;
+  }
+  .btn-outline:hover { border-color: hsl(185 80% 52% / 0.7); color: hsl(185 80% 72%); }
+
+  /* ===== START SCREEN ===== */
+  #start-screen .panel { border: 1px solid hsl(185 80% 52% / 0.35); box-shadow: 0 0 60px hsl(185 80% 52% / 0.12); }
+  .glow-orb {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: hsl(185 80% 52% / 0.12); border: 1px solid hsl(185 80% 52% / 0.5);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .glow-orb-inner {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: hsl(185 80% 52%);
+    box-shadow: 0 0 20px hsl(185 80% 52%);
+  }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 10px hsl(185 80% 52%/0.3)} 50%{box-shadow:0 0 28px hsl(185 80% 52%/0.6)} }
+
+  .game-title { font-family:'Cinzel',serif; font-size:28px; font-weight:700; color:#e8f4f8; text-shadow:0 0 20px hsl(185 80% 52%/0.4); margin-bottom:4px; }
+  .game-subtitle { font-size:12px; color:hsl(185 80% 52%); margin-bottom:20px; letter-spacing:2px; }
+
+  .keys-list {
+    background: hsl(218 40% 5%); border: 1px solid hsl(218 30% 20%);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; text-align:left;
+  }
+  .keys-list .row { display:flex; justify-content:space-between; align-items:center; margin:6px 0; }
+  .key-badge { font-family:monospace; font-size:11px; padding:2px 8px; border-radius:4px; background:hsl(218 30% 12%); color:hsl(185 80% 52%); }
+  .key-desc { font-size:11px; color:hsl(218 20% 55%); }
+
+  .hint-text { font-size:11px; color:hsl(218 20% 50%); line-height:1.6; margin-bottom:20px; }
+  .hint-text strong { color:hsl(42 75% 60%); }
+  .hint-text .npc-color { color:#bb99ff; }
+
+  /* ===== HUD ===== */
+  #hud { position:absolute; z-index:10; width:100%; pointer-events:none; }
+
+  #hud-top {
+    position:absolute; top:16px; left:50%; transform:translateX(-50%);
+    display:flex; gap:10px; align-items:center; pointer-events:none;
+  }
+  .hud-pill {
+    display:flex; align-items:center; gap:6px;
+    padding:6px 16px; border-radius:999px;
+    background:rgba(5,10,18,0.85);
+    font-size:13px; font-weight:700;
+  }
+  .hud-pill .label { font-size:11px; font-weight:400; color:rgba(180,195,210,0.5); }
+  #timer-pill { border:1px solid rgba(13,206,186,0.3); color:#0dceba; }
+  #found-pill { border:1px solid rgba(245,200,66,0.3); color:#f5c842; }
+  #hints-pill { border:1px solid rgba(153,102,255,0.3); color:#bb99ff; }
+
+  #hud-legend {
+    position:absolute; top:16px; left:16px;
+    display:flex; flex-direction:column; gap:6px; pointer-events:none;
+  }
+  .legend-row { display:flex; align-items:center; gap:8px; }
+  .legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .legend-label { font-size:11px; color:rgba(180,195,210,0.55); }
+
+  /* ===== INTERACT PROMPT ===== */
+  #interact-prompt {
+    position:absolute; bottom:120px; left:50%; transform:translateX(-50%);
+    padding:8px 20px; border-radius:999px;
+    background:rgba(5,10,18,0.9);
+    display:none; align-items:center; gap:8px;
+    pointer-events:none;
+    z-index:10;
+  }
+  #interact-prompt.show { display:flex; }
+  .e-badge { font-family:monospace; font-size:11px; padding:2px 8px; border-radius:4px; }
+  #interact-text { font-size:12px; color:rgba(200,210,220,0.85); }
+
+  /* ===== JUST FOUND ===== */
+  #just-found {
+    position:absolute; top:80px; left:50%; transform:translateX(-50%);
+    padding:10px 24px; border-radius:999px;
+    background:rgba(68,255,136,0.15); border:1px solid rgba(68,255,136,0.6);
+    color:#44ff88; font-size:14px; font-weight:700;
+    text-shadow:0 0 10px #44ff88;
+    display:none; z-index:15;
+    animation: fadein .3s ease;
+  }
+  #just-found.show { display:block; }
+  @keyframes fadein { from{opacity:0;transform:translateX(-50%) translateY(-10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+
+  /* ===== NPC DIALOG ===== */
+  #dialog {
+    position:absolute; bottom:24px; left:50%; transform:translateX(-50%);
+    width:90%; max-width:500px; z-index:20;
+    display:none;
+  }
+  #dialog.show { display:block; }
+  .dialog-box {
+    border-radius:16px; padding:20px;
+    background:rgba(5,10,18,0.97); border:1px solid rgba(153,102,255,0.4);
+    box-shadow:0 0 30px rgba(153,102,255,0.12);
+  }
+  .dialog-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .dialog-dot { width:8px; height:8px; border-radius:50%; background:#bb99ff; box-shadow:0 0 6px #bb99ff; }
+  .dialog-name { font-family:'Cinzel',serif; font-size:12px; color:#bb99ff; font-weight:600; }
+  .dialog-close-hint { margin-left:auto; font-size:10px; color:rgba(150,160,180,0.45); }
+  .dialog-text { font-size:13px; font-style:italic; line-height:1.6; color:rgba(200,215,225,0.85); margin-bottom:12px; }
+  .dialog-btn {
+    font-size:11px; padding:5px 14px; border-radius:6px; cursor:pointer;
+    background:rgba(153,102,255,0.15); color:#bb99ff;
+    border:1px solid rgba(153,102,255,0.3);
+    pointer-events:all;
+  }
+
+  /* ===== MOBILE D-PAD ===== */
+  #dpad {
+    position:absolute; bottom:24px; right:24px; z-index:10;
+    display:none;
+    grid-template-columns:repeat(3, 44px);
+    grid-template-rows:repeat(3, 44px);
+    gap:4px;
+  }
+  @media (max-width:768px) { #dpad { display:grid; } }
+  .dpad-btn {
+    border:1px solid rgba(13,206,186,0.3);
+    background:rgba(13,206,186,0.12); border-radius:8px;
+    color:#0dceba; font-size:20px; font-weight:700;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    user-select:none; -webkit-user-select:none;
+    touch-action:none;
+  }
+  .e-mobile {
+    position:absolute; bottom:130px; right:24px; z-index:10;
+    width:56px; height:56px; border-radius:50%;
+    background:rgba(245,200,66,0.18); border:1px solid rgba(245,200,66,0.5);
+    color:#f5c842; font-size:18px; font-weight:700;
+    display:none; align-items:center; justify-content:center;
+    cursor:pointer; font-family:'Cinzel',serif;
+    touch-action:none;
+  }
+  @media (max-width:768px) { .e-mobile { display:flex; } }
+
+  /* ===== END SCREENS ===== */
+  #won-screen .panel { border:1px solid rgba(68,255,136,0.4); box-shadow:0 0 60px rgba(68,255,136,0.1); }
+  #lost-screen .panel { border:1px solid rgba(255,68,68,0.3); box-shadow:0 0 60px rgba(255,68,68,0.08); }
+
+  .end-icon { font-size:50px; margin-bottom:16px; }
+  .end-title { font-family:'Cinzel',serif; font-size:24px; font-weight:700; margin-bottom:8px; }
+  .end-subtitle { font-size:13px; color:hsl(218 20% 55%); margin-bottom:20px; }
+  .end-subtitle strong { color:#f5c842; }
+
+  .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+  .stat-box { padding:12px; border-radius:8px; background:hsl(218 40% 5%); border:1px solid hsl(218 30% 18%); }
+  .stat-val { font-size:18px; font-weight:700; }
+  .stat-label { font-size:11px; color:hsl(218 20% 50%); margin-top:2px; }
+
+  .score-box { padding:16px; border-radius:8px; margin-bottom:20px; background:rgba(68,255,136,0.08); border:1px solid rgba(68,255,136,0.2); }
+  .score-val { font-family:'Cinzel',serif; font-size:32px; font-weight:700; color:#44ff88; }
+  .score-label { font-size:11px; color:hsl(218 20% 50%); margin-top:4px; }
+
+  /* ===== MINIMAP ===== */
+  #minimap {
+    position:absolute; bottom:16px; left:16px; z-index:10;
+    width:120px; height:90px; border-radius:8px; overflow:hidden;
+    border:1px solid rgba(13,206,186,0.25);
+    background:rgba(5,10,18,0.8);
+  }
+  #minimap canvas { width:100%; height:100%; }
+</style>
+</head>
+<body>
+
+<!-- ===== CANVAS ===== -->
+<canvas id="gameCanvas"></canvas>
+
+<!-- ===== HUD ===== -->
+<div id="hud">
+  <div id="hud-top">
+    <div class="hud-pill" id="timer-pill">
+      <span>⏱</span>
+      <span id="timer-val">5:00</span>
+    </div>
+    <div class="hud-pill" id="found-pill">
+      <span>👤</span>
+      <span id="found-val">0<span class="label">/5</span></span>
+    </div>
+    <div class="hud-pill" id="hints-pill">
+      <span>💡</span>
+      <span id="hints-val">0</span>
+    </div>
+  </div>
+
+  <div id="hud-legend">
+    <div class="legend-row"><div class="legend-dot" style="background:#0dceba;box-shadow:0 0 6px #0dceba"></div><span class="legend-label">Ти</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:#f5c842;box-shadow:0 0 6px #f5c842"></div><span class="legend-label">Скрит (близо!)</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:#bb99ff;box-shadow:0 0 6px #bb99ff"></div><span class="legend-label">NPC (E = говори)</span></div>
+  </div>
+</div>
+
+<!-- ===== INTERACT PROMPT ===== -->
+<div id="interact-prompt">
+  <span class="e-badge" id="e-badge">E</span>
+  <span id="interact-text">Говори с NPC</span>
+</div>
+
+<!-- ===== JUST FOUND ===== -->
+<div id="just-found"></div>
+
+<!-- ===== DIALOG ===== -->
+<div id="dialog">
+  <div class="dialog-box">
+    <div class="dialog-header">
+      <div class="dialog-dot"></div>
+      <span class="dialog-name" id="dialog-name">NPC</span>
+      <span class="dialog-close-hint">Esc / E за затваряне</span>
+    </div>
+    <p class="dialog-text" id="dialog-text"></p>
+    <button class="dialog-btn" id="dialog-close-btn">Затвори</button>
+  </div>
+</div>
+
+<!-- ===== MOBILE ===== -->
+<div id="dpad">
+  <div></div>
+  <button class="dpad-btn" id="btn-up">↑</button>
+  <div></div>
+  <button class="dpad-btn" id="btn-left">←</button>
+  <button class="dpad-btn" id="btn-down">↓</button>
+  <button class="dpad-btn" id="btn-right">→</button>
+</div>
+<button class="e-mobile" id="btn-e">E</button>
+
+<!-- ===== MINIMAP ===== -->
+<div id="minimap"><canvas id="minimapCanvas"></canvas></div>
+
+<!-- ===== START SCREEN ===== -->
+<div class="overlay" id="start-screen">
+  <div class="panel">
+    <div class="glow-orb"><div class="glow-orb-inner"></div></div>
+    <div class="game-title">FOG &amp; SEEK</div>
+    <div class="game-subtitle">2D Top-Down · Discovery</div>
+    <div class="keys-list">
+      <div class="row"><span class="key-badge">WASD / ↑↓←→</span><span class="key-desc">Движение</span></div>
+      <div class="row"><span class="key-badge">E</span><span class="key-desc">Намери скрит / Говори с NPC</span></div>
+      <div class="row"><span class="key-badge">Esc</span><span class="key-desc">Затвори диалог</span></div>
+    </div>
+    <p class="hint-text">
+      Намери <strong>5 скрити хора</strong> преди времето да изтече.<br>
+      Говори с <span class="npc-color">NPC (лилави)</span> за подсказки.<br>
+      Жълтите фигури се виждат само много близо!
+    </p>
+    <button class="btn-glow" id="start-btn">Влез в Мъглата</button>
+    <button class="btn-outline" id="back-btn">← Назад</button>
+  </div>
+</div>
+
+<!-- ===== WON SCREEN ===== -->
+<div class="overlay" id="won-screen" style="display:none">
+  <div class="panel">
+    <div class="end-icon">🎉</div>
+    <div class="end-title" style="color:#44ff88;text-shadow:0 0 20px #44ff88">Победа!</div>
+    <div class="end-subtitle">Намери всички 5 скрити хора!</div>
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-val" style="color:#0dceba" id="won-time">--</div><div class="stat-label">Останало</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#bb99ff" id="won-hints">--</div><div class="stat-label">Подсказки</div></div>
+    </div>
+    <div class="score-box"><div class="score-val" id="won-score">0</div><div class="score-label">Точки</div></div>
+    <button class="btn-glow" id="won-restart">Нова игра</button>
+    <button class="btn-outline" id="won-back">← Начало</button>
+  </div>
+</div>
+
+<!-- ===== LOST SCREEN ===== -->
+<div class="overlay" id="lost-screen" style="display:none">
+  <div class="panel">
+    <div class="end-icon">🌫️</div>
+    <div class="end-title" style="color:#ff6666;text-shadow:0 0 20px #ff4444">Мъглата те погълна</div>
+    <div class="end-subtitle">Намерени: <strong id="lost-found">0</strong> от 5</div>
+    <button class="btn-glow" id="lost-restart">Опитай пак</button>
+    <button class="btn-outline" id="lost-back">← Начало</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  CONSTANTS
+// ============================================================
+const MAP_W = 2400, MAP_H = 1800;
+const VISION_R = 130;
+const PLAYER_SPEED = 2.8;
+const FIND_R = 70;
+const NPC_INTERACT_R = 85;
+const GAME_DURATION = 300;
+
+// ============================================================
+//  MAP DATA
+// ============================================================
+const ZONE_NAMES = ['гората','селото','руините','полето'];
+const ZONE_FEATURES = [
+  ['стари дъбове','гъсти храсти','паднал ствол'],
+  ['изоставената колиба','старата воденица','кладенеца'],
+  ['каменните стени','старите арки','тъмния ъгъл'],
+  ['скалите','високата трева','изоставената каруца'],
+];
+
+function getZone(x, y) {
+  if (x < 1200 && y < 900) return 0;
+  if (x >= 1200 && y < 900) return 1;
+  if (x < 1200 && y >= 900) return 2;
+  return 3;
+}
+
+const HIDDEN_SPAWN = [
+  {id:0,x:320,y:260,zone:0},{id:1,x:1640,y:340,zone:1},
+  {id:2,x:820,y:1380,zone:2},{id:3,x:1920,y:1520,zone:3},{id:4,x:980,y:680,zone:0},
+];
+
+const NPCS = [
+  {id:0,x:750,y:430,zone:0,name:'Стар Ловец'},
+  {id:1,x:1450,y:580,zone:1,name:'Странникът'},
+  {id:2,x:380,y:1240,zone:2,name:'Пазачът'},
+  {id:3,x:1720,y:1180,zone:3,name:'Отшелникът'},
+];
+
+// ============================================================
+//  BUILD MAP OBJECTS
+// ============================================================
+const MAP_OBJECTS = [];
+
+// Forest trees (zone 0)
+[[120,80,28],[260,180,22],[380,130,30],[90,320,25],[330,370,20],[480,270,26],
+ [180,480,24],[630,170,28],[740,320,22],[800,130,32],[160,620,20],[400,590,26],
+ [580,520,24],[880,270,30],[1020,190,22],[1040,420,26],[830,530,28],[940,680,20],
+ [290,730,24],[580,780,22],[730,670,26],[80,780,20],[440,830,24],[1080,570,22],
+ [1080,730,26],[50,190,20],[690,770,22],[940,800,24],[840,400,20],[200,300,26],
+ [510,650,22],[680,440,28],[1100,350,24],[360,500,20],[750,580,26],[1000,450,22],
+ [130,460,28],[450,190,24],[700,100,20],[900,600,22],[1050,650,28],[200,720,24],
+].forEach(([x,y,r]) => MAP_OBJECTS.push({x,y,w:r,h:r,type:'tree'}));
+
+// Village buildings (zone 1)
+[[1260,80,80,60],[1380,70,100,70],[1560,130,90,80],[1710,90,80,60],[1860,70,110,70],
+ [2010,130,90,80],[1310,280,120,80],[1510,260,100,60],[1720,300,80,70],[1910,260,100,80],
+ [2110,280,90,60],[2220,130,100,80],[1410,430,80,60],[1610,410,100,70],[1810,440,90,60],
+ [2060,410,80,70],[2310,330,100,80],[1260,480,90,60],[2160,480,80,70],[1460,560,110,65],
+ [1660,540,90,70],[1960,560,100,60],[2260,530,80,60],[1360,620,90,55],[1560,700,100,60],
+ [1760,680,80,65],[2060,700,90,60],[1300,760,70,55],[1500,780,100,60],[1700,760,80,60],
+].forEach(([x,y,w,h]) => MAP_OBJECTS.push({x,y,w,h,type:'building'}));
+
+// Ruins (zone 2)
+[[80,940,70,9],[190,990,9,65],[340,970,80,9],[510,940,9,55],[140,1090,90,9],[290,1140,9,75],
+ [600,990,65,9],[710,1040,9,65],[440,1090,75,9],[810,970,9,85],[900,990,65,9],[190,1240,85,9],
+ [390,1290,9,65],[540,1270,75,9],[700,1240,9,55],[850,1140,65,9],[1000,1090,9,75],[290,1390,85,9],
+ [490,1440,9,65],[640,1390,75,9],[800,1370,9,55],[950,1340,65,9],[1100,1190,9,75],[1040,1390,65,9],
+ [90,1390,9,65],[190,1490,85,9],[390,1540,9,55],[590,1590,75,9],[790,1540,9,65],[990,1490,65,9],
+ [250,1650,80,9],[650,1680,70,9],[950,1650,9,60],[1080,1580,60,9],[120,1720,80,9],[500,1750,70,9],
+].forEach(([x,y,w,h]) => MAP_OBJECTS.push({x,y,w,h,type:'ruin'}));
+
+// Rocks (zone 3)
+[[1310,950,28,18],[1470,1010,22,14],[1620,960,30,20],[1770,1020,25,16],[1920,960,28,18],
+ [2070,1010,22,15],[2220,960,26,17],[2370,1020,28,18],[1360,1120,24,16],[1510,1170,28,18],
+ [1660,1120,22,14],[1820,1170,26,17],[1970,1120,28,18],[2120,1170,24,16],[2270,1120,22,15],
+ [1410,1320,26,17],[1560,1370,28,18],[1710,1320,24,16],[1870,1370,28,18],[2020,1320,22,14],
+ [2170,1370,26,17],[2320,1320,28,18],[1310,1520,24,16],[1460,1570,28,18],[1610,1520,22,14],
+ [1760,1570,26,17],[1920,1520,28,18],[2070,1570,24,16],[2220,1520,22,15],[2370,1570,26,17],
+ [1360,1720,28,18],[1510,1760,22,14],[1660,1720,26,17],[1820,1760,28,18],[2020,1720,22,14],[2220,1760,26,17],
+].forEach(([x,y,w,h]) => MAP_OBJECTS.push({x,y,w,h,type:'rock'}));
+
+// ============================================================
+//  HINT GENERATION
+// ============================================================
+function generateHint(player, target) {
+  const dx = target.x - player.x, dy = target.y - player.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+  const dirs = ['изток','югоизток','юг','югозапад','запад','северозапад','север','североизток'];
+  const dirIdx = ((Math.round((angle + 180) / 45)) % 8 + 8) % 8;
+  const dir = dirs[dirIdx];
+  const distStr = dist > 900 ? 'много далеч' : dist > 500 ? 'далеч' : dist > 250 ? 'наблизо' : 'много близо';
+  const zone = ZONE_NAMES[target.zone];
+  const feats = ZONE_FEATURES[target.zone];
+  const feat = feats[Math.floor(Math.random() * feats.length)];
+  const templates = [
+    `Чух шум откъм ${dir}… ${distStr}, близо до ${feat} в ${zone}.`,
+    `Мъглата е по-гъста на ${dir}. Погледни до ${feat}.`,
+    `Стъпки на ${dir}, ${distStr}… в ${zone}.`,
+    `Усетих дъхание откъм ${dir}. Близо до ${feat}.`,
+    `В ${zone} на ${dir}, ${distStr} — до ${feat}.`,
+    `Птиците замлъкнаха на ${dir}. Нещо се крие до ${feat}.`,
+    `Тревата е смачкана на ${dir}, ${distStr} от тук.`,
+    `Сенки се движат в ${zone}, на ${dir}. Търси до ${feat}.`,
+  ];
+  return templates[Math.floor(Math.random() * templates.length)];
+}
+
+// ============================================================
+//  COLLISION
+// ============================================================
+function hasCollision(nx, ny) {
+  const PR = 10;
+  for (const obj of MAP_OBJECTS) {
+    if (obj.type === 'tree' || obj.type === 'bush') {
+      const dx = nx - obj.x, dy = ny - obj.y;
+      if (Math.sqrt(dx*dx + dy*dy) < obj.w * 0.7 + PR) return true;
+    } else if (obj.type === 'building') {
+      if (nx+PR > obj.x && nx-PR < obj.x+obj.w && ny+PR > obj.y && ny-PR < obj.y+obj.h) return true;
+    }
+  }
+  return false;
+}
+
+// ============================================================
+//  DRAW HELPERS
+// ============================================================
+function drawTree(ctx, x, y, r) {
+  ctx.fillStyle = '#1a0e05'; ctx.fillRect(x-3, y, 6, 10);
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fillStyle = '#0d2510'; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-r*0.15, y-r*0.15, r*0.65, 0, Math.PI*2); ctx.fillStyle = '#122b13'; ctx.fill();
+  ctx.beginPath(); ctx.arc(x, y, r*0.4, 0, Math.PI*2); ctx.fillStyle = '#163318'; ctx.fill();
+}
+
+function drawBuilding(ctx, x, y, w, h) {
+  ctx.fillStyle = '#1c1208'; ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = '#2e1e0a'; ctx.lineWidth = 1.5; ctx.strokeRect(x, y, w, h);
+  ctx.fillStyle = '#120c05'; ctx.fillRect(x, y, w, 9);
+  if (w > 55) {
+    ctx.fillStyle = '#2a1f08'; ctx.fillRect(x+w*0.3, y+h*0.35, 11, 9);
+    if (w > 80) ctx.fillRect(x+w*0.6, y+h*0.35, 11, 9);
+  }
+  ctx.fillStyle = '#0e0905'; ctx.fillRect(x+w*0.5-6, y+h-14, 12, 14);
+}
+
+function drawRock(ctx, x, y, w, h) {
+  ctx.beginPath(); ctx.ellipse(x, y, w/2, h/2, 0, 0, Math.PI*2);
+  ctx.fillStyle = '#1b1e22'; ctx.fill();
+  ctx.strokeStyle = '#252a2d'; ctx.lineWidth = 1; ctx.stroke();
+}
+
+function drawRuin(ctx, x, y, w, h) {
+  ctx.fillStyle = '#191c1f'; ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = '#252829'; ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h);
+  if (w > 30) {
+    ctx.strokeStyle = '#0e1012'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x+w*0.3, y); ctx.lineTo(x+w*0.35, y+h); ctx.stroke();
+  }
+}
+
+function drawFigure(ctx, x, y, headCol, bodyCol, glowCol, glowR, alpha) {
+  ctx.save(); ctx.globalAlpha = alpha;
+  const g = ctx.createRadialGradient(x, y+4, 0, x, y+4, glowR);
+  g.addColorStop(0, glowCol+'55'); g.addColorStop(1, glowCol+'00');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y+4, glowR, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = bodyCol; ctx.fillRect(x-4, y, 8, 13);
+  ctx.beginPath(); ctx.arc(x, y-5, 5, 0, Math.PI*2); ctx.fillStyle = headCol; ctx.fill();
+  ctx.restore();
+}
+
+function drawPlayer(ctx, x, y) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, 24);
+  g.addColorStop(0, 'rgba(0,220,200,0.3)'); g.addColorStop(1, 'rgba(0,220,200,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 24, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#0dceba'; ctx.fillRect(x-4, y-2, 8, 12);
+  ctx.beginPath(); ctx.arc(x, y-7, 5, 0, Math.PI*2); ctx.fillStyle = '#0dceba'; ctx.fill();
+  ctx.beginPath(); ctx.arc(x, y-7, 2, 0, Math.PI*2); ctx.fillStyle = '#ffffff'; ctx.fill();
+}
+
+// ============================================================
+//  GAME STATE
+// ============================================================
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const fogCanvas = document.createElement('canvas');
+const fctx = fogCanvas.getContext('2d');
+const minimapCanvas = document.getElementById('minimapCanvas');
+const mctx = minimapCanvas.getContext('2d');
+
+let phase = 'start'; // 'start' | 'playing' | 'won' | 'lost'
+let player = {x: 1200, y: 900};
+let camera = {x: 0, y: 0};
+let hiddenPeople = [];
+let keys = new Set();
+let timeLeft = GAME_DURATION;
+let hintsUsed = 0;
+let foundCount = 0;
+let nearNPC = null;
+let nearHidden = null;
+let interactCooldown = 0;
+let dialogOpen = false;
+let t = 0;
+let lastTs = 0;
+let rafId = 0;
+
+// ============================================================
+//  RESIZE
+// ============================================================
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  fogCanvas.width = canvas.width;
+  fogCanvas.height = canvas.height;
+  minimapCanvas.width = 120;
+  minimapCanvas.height = 90;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ============================================================
+//  GAME INIT
+// ============================================================
+function startGame() {
+  phase = 'playing';
+  player = {x: 1200, y: 900};
+  hiddenPeople = HIDDEN_SPAWN.map(p => ({...p, found: false}));
+  timeLeft = GAME_DURATION;
+  hintsUsed = 0;
+  foundCount = 0;
+  t = 0;
+  lastTs = 0;
+  interactCooldown = 0;
+  dialogOpen = false;
+  nearNPC = null;
+  nearHidden = null;
+
+  // Hide all overlays, show HUD
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('won-screen').style.display = 'none';
+  document.getElementById('lost-screen').style.display = 'none';
+  document.getElementById('hud').style.display = 'block';
+  document.getElementById('minimap').style.display = 'block';
+  closeDialog();
+  cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(loop);
+}
+
+function showStart() {
+  phase = 'start';
+  cancelAnimationFrame(rafId);
+  document.getElementById('start-screen').style.display = 'flex';
+  document.getElementById('won-screen').style.display = 'none';
+  document.getElementById('lost-screen').style.display = 'none';
+  document.getElementById('hud').style.display = 'none';
+  document.getElementById('minimap').style.display = 'none';
+  closeDialog();
+}
+
+// Initially hide HUD and minimap
+document.getElementById('hud').style.display = 'none';
+document.getElementById('minimap').style.display = 'none';
+
+// ============================================================
+//  INTERACT
+// ============================================================
+function interact() {
+  if (phase !== 'playing') return;
+  if (dialogOpen) { closeDialog(); return; }
+  if (interactCooldown > 0) return;
+  interactCooldown = 0.5;
+
+  if (nearHidden) {
+    nearHidden.found = true;
+    foundCount++;
+    updateHUD();
+    showJustFound(`Намерен! (${foundCount}/5)`);
+    if (foundCount >= 5) {
+      setTimeout(() => endGame('won'), 600);
+    }
+    return;
+  }
+  if (nearNPC) {
+    const unfound = hiddenPeople.filter(p => !p.found);
+    if (!unfound.length) return;
+    const closest = unfound.reduce((a,b) => {
+      const da = Math.hypot(a.x-player.x, a.y-player.y);
+      const db = Math.hypot(b.x-player.x, b.y-player.y);
+      return da < db ? a : b;
+    });
+    const hint = generateHint(player, closest);
+    hintsUsed++;
+    updateHUD();
+    openDialog(nearNPC.name, hint);
+    interactCooldown = 1;
+  }
+}
+
+// ============================================================
+//  DIALOG
+// ============================================================
+function openDialog(name, text) {
+  dialogOpen = true;
+  document.getElementById('dialog-name').textContent = name;
+  document.getElementById('dialog-text').textContent = `"${text}"`;
+  document.getElementById('dialog').classList.add('show');
+}
+function closeDialog() {
+  dialogOpen = false;
+  document.getElementById('dialog').classList.remove('show');
+}
+
+// ============================================================
+//  HUD UPDATES
+// ============================================================
+function fmt(s) { return `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`; }
+
+function updateHUD() {
+  const tc = timeLeft < 60 ? '#ff4444' : timeLeft < 120 ? '#ff8c00' : '#0dceba';
+  const timerEl = document.getElementById('timer-val');
+  timerEl.textContent = fmt(timeLeft);
+  timerEl.style.color = tc;
+  timerEl.style.textShadow = `0 0 10px ${tc}`;
+  document.getElementById('found-val').innerHTML = `${foundCount}<span class="label">/5</span>`;
+  document.getElementById('hints-val').textContent = hintsUsed;
+}
+
+function showJustFound(msg) {
+  const el = document.getElementById('just-found');
+  el.textContent = '✓ ' + msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+function updateInteractPrompt() {
+  const el = document.getElementById('interact-prompt');
+  const badge = document.getElementById('e-badge');
+  const text = document.getElementById('interact-text');
+  if ((nearHidden || nearNPC) && !dialogOpen) {
+    el.classList.add('show');
+    if (nearHidden) {
+      badge.style.background = '#f5c84222'; badge.style.color = '#f5c842';
+      el.style.borderColor = '#f5c84288';
+      text.textContent = 'Намерен! Натисни E';
+    } else {
+      badge.style.background = '#9966ff22'; badge.style.color = '#bb99ff';
+      el.style.borderColor = '#9966ff88';
+      text.textContent = 'Говори с NPC';
+    }
+  } else {
+    el.classList.remove('show');
+  }
+}
+
+// ============================================================
+//  END GAME
+// ============================================================
+function endGame(result) {
+  phase = result;
+  cancelAnimationFrame(rafId);
+  document.getElementById('hud').style.display = 'none';
+  closeDialog();
+  if (result === 'won') {
+    document.getElementById('won-time').textContent = fmt(timeLeft);
+    document.getElementById('won-hints').textContent = hintsUsed;
+    document.getElementById('won-score').textContent = Math.max(0, Math.round(timeLeft * 10 - hintsUsed * 50));
+    document.getElementById('won-screen').style.display = 'flex';
+  } else {
+    document.getElementById('lost-found').textContent = foundCount;
+    document.getElementById('lost-screen').style.display = 'flex';
+  }
+}
+
+// ============================================================
+//  MINIMAP
+// ============================================================
+function drawMinimap() {
+  const scaleX = 120 / MAP_W, scaleY = 90 / MAP_H;
+  mctx.clearRect(0, 0, 120, 90);
+  // Zone fills
+  const zones = [
+    {x:0,y:0,w:60,h:45,c:'#0c1f0e'},{x:60,y:0,w:60,h:45,c:'#19120a'},
+    {x:0,y:45,w:60,h:45,c:'#10131a'},{x:60,y:45,w:60,h:45,c:'#111a0d'},
+  ];
+  zones.forEach(z => { mctx.fillStyle = z.c; mctx.fillRect(z.x, z.y, z.w, z.h); });
+  // Hidden people
+  hiddenPeople.forEach(p => {
+    if (p.found) { mctx.fillStyle = '#44ff88'; }
+    else { mctx.fillStyle = '#f5c84288'; }
+    mctx.beginPath();
+    mctx.arc(p.x * scaleX, p.y * scaleY, 2, 0, Math.PI*2);
+    mctx.fill();
+  });
+  // NPCs
+  NPCS.forEach(n => {
+    mctx.fillStyle = '#bb99ff88';
+    mctx.beginPath(); mctx.arc(n.x*scaleX, n.y*scaleY, 1.5, 0, Math.PI*2); mctx.fill();
+  });
+  // Player
+  mctx.fillStyle = '#0dceba';
+  mctx.beginPath(); mctx.arc(player.x*scaleX, player.y*scaleY, 3, 0, Math.PI*2); mctx.fill();
+  mctx.strokeStyle = '#0dceba44'; mctx.lineWidth = 0.5; mctx.stroke();
+}
+
+// ============================================================
+//  MAIN LOOP
+// ============================================================
+function loop(ts) {
+  const dt = Math.min((ts - (lastTs || ts)) / 1000, 0.05);
+  lastTs = ts;
+  t += dt;
+  if (interactCooldown > 0) interactCooldown -= dt;
+
+  const W = canvas.width, H = canvas.height;
+
+  if (phase === 'playing') {
+    // Timer
+    timeLeft -= dt;
+    if (timeLeft <= 0) { timeLeft = 0; endGame('lost'); return; }
+    updateHUD();
+
+    // Movement
+    let dx = 0, dy = 0;
+    if (keys.has('arrowleft') || keys.has('a')) dx -= 1;
+    if (keys.has('arrowright') || keys.has('d')) dx += 1;
+    if (keys.has('arrowup') || keys.has('w')) dy -= 1;
+    if (keys.has('arrowdown') || keys.has('s')) dy += 1;
+    if (dx !== 0 && dy !== 0) { dx *= 0.707; dy *= 0.707; }
+    const nx = player.x + dx * PLAYER_SPEED;
+    const ny = player.y + dy * PLAYER_SPEED;
+    if (nx > 15 && nx < MAP_W-15 && !hasCollision(nx, player.y)) player.x = nx;
+    if (ny > 15 && ny < MAP_H-15 && !hasCollision(player.x, ny)) player.y = ny;
+
+    // Camera
+    camera.x = Math.max(0, Math.min(MAP_W-W, player.x - W/2));
+    camera.y = Math.max(0, Math.min(MAP_H-H, player.y - H/2));
+
+    // Proximity
+    nearNPC = NPCS.find(n => Math.hypot(n.x-player.x, n.y-player.y) < NPC_INTERACT_R) || null;
+    nearHidden = hiddenPeople.find(p => !p.found && Math.hypot(p.x-player.x, p.y-player.y) < FIND_R) || null;
+    updateInteractPrompt();
+  }
+
+  const cx = camera.x, cy = camera.y;
+  const px = player.x - cx, py = player.y - cy;
+
+  // ---- Background ----
+  ctx.fillStyle = '#0c1208'; ctx.fillRect(0, 0, W, H);
+
+  // Zone fills
+  [{x:0,y:0,w:1200,h:900,c:'#0c1f0e'},{x:1200,y:0,w:1200,h:900,c:'#19120a'},
+   {x:0,y:900,w:1200,h:900,c:'#10131a'},{x:1200,y:900,w:1200,h:900,c:'#111a0d'}]
+  .forEach(z => { ctx.fillStyle = z.c; ctx.fillRect(z.x-cx, z.y-cy, z.w, z.h); });
+
+  // Zone lines
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(1200-cx, -cy); ctx.lineTo(1200-cx, MAP_H-cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-cx, 900-cy); ctx.lineTo(MAP_W-cx, 900-cy); ctx.stroke();
+
+  // Zone labels
+  ctx.font = 'bold 28px "Cinzel", serif'; ctx.textAlign = 'center';
+  ctx.globalAlpha = 0.06; ctx.fillStyle = '#ffffff';
+  ctx.fillText('ГОРА', 600-cx, 450-cy); ctx.fillText('СЕЛО', 1800-cx, 450-cy);
+  ctx.fillText('РУИНИ', 600-cx, 1350-cy); ctx.fillText('ПОЛЕ', 1800-cx, 1350-cy);
+  ctx.globalAlpha = 1;
+
+  // Map objects
+  MAP_OBJECTS.forEach(obj => {
+    const sx = obj.x-cx, sy = obj.y-cy;
+    if (sx < -80 || sx > W+80 || sy < -80 || sy > H+80) return;
+    if (obj.type === 'tree') drawTree(ctx, sx, sy, obj.w);
+    else if (obj.type === 'building') drawBuilding(ctx, sx, sy, obj.w, obj.h);
+    else if (obj.type === 'rock') drawRock(ctx, sx, sy, obj.w, obj.h);
+    else if (obj.type === 'ruin') drawRuin(ctx, sx, sy, obj.w, obj.h);
+  });
+
+  // Hidden people (visible only within FIND_R)
+  hiddenPeople.forEach(p => {
+    if (p.found) return;
+    const d = Math.hypot(p.x-player.x, p.y-player.y);
+    if (d > FIND_R + 10) return;
+    const alpha = Math.max(0, Math.min(1, (FIND_R - d + 10) / 20));
+    const sx = p.x-cx, sy = p.y-cy;
+    drawFigure(ctx, sx, sy, '#f5c842', '#c8a028', '#f5c842', 18, alpha);
+    if (d < FIND_R) {
+      ctx.save(); ctx.globalAlpha = alpha * 0.9;
+      ctx.fillStyle = '#f5c842'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
+      ctx.shadowColor = '#f5c842'; ctx.shadowBlur = 6;
+      ctx.fillText('E', sx, sy-22+Math.sin(t*4)*2);
+      ctx.restore();
+    }
+  });
+
+  // NPCs
+  NPCS.forEach(npc => {
+    const d = Math.hypot(npc.x-player.x, npc.y-player.y);
+    if (d > VISION_R + 40) return;
+    const alpha = Math.min(1, (VISION_R+20-d)/30);
+    const sx = npc.x-cx, sy = npc.y-cy;
+    drawFigure(ctx, sx, sy, '#bb99ff', '#8855ee', '#9966ff', 14, alpha);
+    if (d < NPC_INTERACT_R) {
+      const bob = Math.sin(t*3)*3;
+      ctx.save(); ctx.fillStyle = '#9966ff'; ctx.font = 'bold 13px sans-serif';
+      ctx.textAlign = 'center'; ctx.shadowColor = '#9966ff'; ctx.shadowBlur = 8;
+      ctx.fillText('!', sx, sy-22+bob); ctx.restore();
+    }
+  });
+
+  // Player
+  drawPlayer(ctx, px, py);
+
+  // ---- FOG ----
+  fctx.clearRect(0, 0, W, H);
+  fctx.fillStyle = 'rgba(5,10,18,0.94)'; fctx.fillRect(0, 0, W, H);
+  fctx.globalCompositeOperation = 'destination-out';
+  const vg = fctx.createRadialGradient(px, py, 0, px, py, VISION_R);
+  vg.addColorStop(0, 'rgba(0,0,0,1)');
+  vg.addColorStop(0.65, 'rgba(0,0,0,0.85)');
+  vg.addColorStop(0.85, 'rgba(0,0,0,0.4)');
+  vg.addColorStop(1, 'rgba(0,0,0,0)');
+  fctx.fillStyle = vg; fctx.fillRect(0, 0, W, H);
+  fctx.globalCompositeOperation = 'source-over';
+  ctx.drawImage(fogCanvas, 0, 0);
+
+  // Player glow on top of fog
+  ctx.save();
+  const pg = ctx.createRadialGradient(px, py, 0, px, py, 18);
+  pg.addColorStop(0, 'rgba(0,220,200,0.45)'); pg.addColorStop(1, 'rgba(0,220,200,0)');
+  ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(px, py, 18, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // Found checkmarks
+  hiddenPeople.filter(p => p.found).forEach(p => {
+    const d = Math.hypot(p.x-player.x, p.y-player.y);
+    if (d > VISION_R) return;
+    const sx = p.x-cx, sy = p.y-cy;
+    ctx.save(); ctx.fillStyle = '#44ff88'; ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center'; ctx.shadowColor = '#44ff88'; ctx.shadowBlur = 8;
+    ctx.fillText('✓', sx, sy-22); ctx.restore();
+  });
+
+  // Minimap
+  if (phase === 'playing') drawMinimap();
+
+  rafId = requestAnimationFrame(loop);
+}
+
+// ============================================================
+//  INPUT
+// ============================================================
+window.addEventListener('keydown', e => {
+  keys.add(e.key.toLowerCase());
+  if (['arrowup','arrowdown','arrowleft','arrowright',' '].includes(e.key.toLowerCase())) e.preventDefault();
+  if (e.key.toLowerCase() === 'e') interact();
+  if (e.key === 'Escape') closeDialog();
+});
+window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+
+// Mobile D-pad
+function dpadDown(key) { keys.add(key); }
+function dpadUp(key) { keys.delete(key); }
+
+['up','down','left','right'].forEach(dir => {
+  const btn = document.getElementById('btn-' + dir);
+  const key = 'arrow' + dir;
+  btn.addEventListener('pointerdown', e => { e.preventDefault(); dpadDown(key); });
+  btn.addEventListener('pointerup', e => { e.preventDefault(); dpadUp(key); });
+  btn.addEventListener('pointerleave', e => dpadUp(key));
+});
+
+document.getElementById('btn-e').addEventListener('pointerdown', e => { e.preventDefault(); interact(); });
+
+// Buttons
+document.getElementById('start-btn').addEventListener('click', startGame);
+document.getElementById('back-btn').addEventListener('click', () => {
+  window.parent.postMessage('navigate-home', '*');
+});
+document.getElementById('won-restart').addEventListener('click', startGame);
+document.getElementById('won-back').addEventListener('click', () => window.parent.postMessage('navigate-home', '*'));
+document.getElementById('lost-restart').addEventListener('click', startGame);
+document.getElementById('lost-back').addEventListener('click', () => window.parent.postMessage('navigate-home', '*'));
+document.getElementById('dialog-close-btn').addEventListener('click', closeDialog);
+
+// ============================================================
+//  RENDER LOOP (start screen static render)
+// ============================================================
+function renderIdle() {
+  if (phase !== 'start') return;
+  const W = canvas.width, H = canvas.height;
+  ctx.fillStyle = '#050a12'; ctx.fillRect(0, 0, W, H);
+  // Subtle fog overlay for start screen
+  fctx.fillStyle = 'rgba(5,10,18,0.97)'; fctx.fillRect(0, 0, W, H);
+  ctx.drawImage(fogCanvas, 0, 0);
+  requestAnimationFrame(renderIdle);
+}
+renderIdle();
+</script>
+</body>
+</html>
