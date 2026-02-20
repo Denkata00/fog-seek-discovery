@@ -222,52 +222,6 @@
   }
   #minimap canvas { width:100%; height:100%; }
 
-  /* ===== YOUTUBE INTRO ===== */
-  #yt-overlay {
-    position:fixed; inset:0; z-index:100;
-    background:rgba(5,10,18,0.97);
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:20px;
-  }
-  #yt-overlay.hidden { display:none; }
-  .yt-label {
-    font-family:'Cinzel',serif; font-size:13px; letter-spacing:3px;
-    color:hsl(185 80% 52%); text-transform:uppercase;
-    animation: pulse 2s ease-in-out infinite;
-  }
-  .yt-title {
-    font-family:'Cinzel',serif; font-size:22px; font-weight:700;
-    color:#e8f4f8; text-shadow:0 0 20px hsl(185 80% 52%/0.5);
-    text-align:center; margin-bottom:4px;
-  }
-  .yt-artist { font-size:13px; color:hsl(185 80% 52%); letter-spacing:2px; text-align:center; margin-bottom:8px; }
-  .yt-frame-wrap {
-    position:relative; width:min(640px,90vw); border-radius:12px; overflow:hidden;
-    border:1px solid hsl(185 80% 52%/0.3);
-    box-shadow:0 0 60px hsl(185 80% 52%/0.2);
-    aspect-ratio:16/9;
-  }
-  .yt-frame-wrap iframe { position:absolute; inset:0; width:100%; height:100%; border:none; }
-  .yt-skip {
-    padding:11px 32px; border-radius:8px; cursor:pointer;
-    font-family:'Cinzel',serif; font-size:12px; letter-spacing:3px;
-    text-transform:uppercase; font-weight:700;
-    background:linear-gradient(135deg,hsl(185 80% 38%),hsl(185 80% 28%));
-    color:hsl(185 80% 88%); border:none;
-    box-shadow:0 0 18px hsl(185 80% 52%/0.35);
-    transition:box-shadow .2s,transform .1s;
-  }
-  .yt-skip:hover { box-shadow:0 0 28px hsl(185 80% 52%/0.55); transform:translateY(-1px); }
-  .yt-skip-hint { font-size:11px; color:hsl(218 20% 40%); }
-  .yt-countdown {
-    font-family:'Cinzel',serif; font-size:32px; font-weight:700;
-    color:hsl(185 80% 52%);
-    text-shadow:0 0 20px hsl(185 80% 52%/0.6);
-    width:56px; height:56px; border-radius:50%;
-    border:2px solid hsl(185 80% 52%/0.4);
-    display:flex; align-items:center; justify-content:center;
-    animation: pulse 1s ease-in-out infinite;
-  }
 </style>
 </head>
 <body>
@@ -335,23 +289,6 @@
 <!-- ===== MINIMAP ===== -->
 <div id="minimap"><canvas id="minimapCanvas"></canvas></div>
 
-<!-- ===== YOUTUBE INTRO ===== -->
-<div id="yt-overlay">
-  <div class="yt-label">🎵 Now Playing</div>
-  <div class="yt-title">Sen Trope</div>
-  <div class="yt-artist">Azis</div>
-  <div class="yt-frame-wrap">
-    <iframe
-      id="yt-iframe"
-      src="https://www.youtube-nocookie.com/embed/qmYdqDOZZ2M?autoplay=1&start=30&end=35&rel=0&modestbranding=1&controls=0&disablekb=1"
-      title="Azis - Sen Trope"
-      frameborder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      allowfullscreen
-    ></iframe>
-  </div>
-  <div class="yt-countdown" id="yt-countdown">5</div>
-</div>
 
 <!-- ===== START SCREEN ===== -->
 <div class="overlay" id="start-screen">
@@ -402,30 +339,6 @@
 </div>
 
 <script>
-// ============================================================
-//  YOUTUBE INTRO
-// ============================================================
-(function() {
-  const ytOverlay = document.getElementById('yt-overlay');
-  const ytIframe  = document.getElementById('yt-iframe');
-  const ytCountdown = document.getElementById('yt-countdown');
-
-  function closeYT() {
-    ytIframe.src = '';
-    ytOverlay.classList.add('hidden');
-  }
-
-  // Countdown display
-  let remaining = 5;
-  const tick = setInterval(function() {
-    remaining--;
-    if (ytCountdown) ytCountdown.textContent = remaining;
-    if (remaining <= 0) {
-      clearInterval(tick);
-      closeYT();
-    }
-  }, 1000);
-})();
 // ============================================================
 //  CONSTANTS
 // ============================================================
