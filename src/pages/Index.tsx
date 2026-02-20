@@ -4,6 +4,7 @@ import FogParticles from "@/components/FogParticles";
 import HintTyper from "@/components/HintTyper";
 import ZoneCards from "@/components/ZoneCards";
 import { Eye, Map, MessageSquare, Clock, Users, Compass, ChevronDown } from "lucide-react";
+import { useState } from "react";
 
 const features = [
   {
@@ -50,12 +51,97 @@ const features = [
   },
 ];
 
+const ComingSoonModal = ({ onClose }: { onClose: () => void }) => (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center p-6"
+    style={{ background: "hsl(218 45% 4% / 0.85)", backdropFilter: "blur(8px)" }}
+    onClick={onClose}
+  >
+    <div
+      className="relative max-w-md w-full rounded-2xl p-8 text-center"
+      style={{
+        background: "hsl(218 40% 7%)",
+        border: "1px solid hsl(185 80% 52% / 0.35)",
+        boxShadow: "0 0 60px hsl(185 80% 52% / 0.15), 0 20px 60px hsl(218 45% 2% / 0.8)",
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Glow orb */}
+      <div
+        className="mx-auto mb-6 w-16 h-16 rounded-full flex items-center justify-center animate-glow-pulse"
+        style={{
+          background: "hsl(185 80% 52% / 0.12)",
+          border: "1px solid hsl(185 80% 52% / 0.4)",
+        }}
+      >
+        <div
+          className="w-6 h-6 rounded-full"
+          style={{ background: "hsl(185 80% 52%)", boxShadow: "0 0 20px hsl(185 80% 52%)" }}
+        />
+      </div>
+
+      <h3
+        className="text-2xl font-bold mb-3 glow-text"
+        style={{ fontFamily: "Cinzel, serif", color: "hsl(var(--foreground))" }}
+      >
+        Играта е в разработка
+      </h3>
+      <p
+        className="text-sm leading-relaxed mb-6"
+        style={{ color: "hsl(var(--muted-foreground))", fontFamily: "Inter, sans-serif", fontWeight: 300 }}
+      >
+        <em>Fog & Seek</em> се създава в Godot. Мъглата скоро ще те погълне —<br />
+        следи за обновления!
+      </p>
+
+      <div className="flex flex-col gap-3">
+        <a
+          href="https://itch.io"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-glow w-full py-3 rounded-lg text-xs tracking-widest uppercase"
+          style={{ fontFamily: "Cinzel, serif", textDecoration: "none", display: "block" }}
+        >
+          Следи на itch.io
+        </a>
+        <button
+          onClick={onClose}
+          className="btn-outline-glow w-full py-3 rounded-lg text-xs tracking-widest uppercase"
+          style={{ fontFamily: "Cinzel, serif" }}
+        >
+          Затвори
+        </button>
+      </div>
+
+      {/* Fog particles inside modal */}
+      <div className="absolute inset-0 pointer-events-none rounded-2xl overflow-hidden">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              left: `${15 + i * 14}%`,
+              width: 2 + i % 2,
+              height: 2 + i % 2,
+              background: "hsl(185 80% 52% / 0.5)",
+              boxShadow: "0 0 6px hsl(185 80% 52% / 0.6)",
+              animation: `particle-float ${10 + i * 2}s ${i * 1.5}s linear infinite`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
 const Index = () => {
+  const [showModal, setShowModal] = useState(false);
   return (
     <div
       className="min-h-screen relative"
       style={{ background: "hsl(var(--background))", fontFamily: "Inter, sans-serif" }}
     >
+      {showModal && <ComingSoonModal onClose={() => setShowModal(false)} />}
       {/* ==================== HERO ==================== */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
         {/* Background image */}
@@ -157,12 +243,14 @@ const Index = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
+              onClick={() => setShowModal(true)}
               className="btn-glow px-8 py-3.5 rounded-lg font-display text-sm tracking-widest uppercase"
               style={{ fontFamily: "Cinzel, serif" }}
             >
               Играй Сега
             </button>
             <button
+              onClick={() => document.getElementById("mechanics")?.scrollIntoView({ behavior: "smooth" })}
               className="btn-outline-glow px-8 py-3.5 rounded-lg font-display text-sm tracking-widest uppercase"
               style={{ fontFamily: "Cinzel, serif" }}
             >
