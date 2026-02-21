@@ -795,7 +795,7 @@ function drawPixelPlayer(ctx, x, y, t) {
   else if (playerDir === 'left' || playerDir === 'right') row = 1;
 
   // Pick frame
-  const frameIndex = playerMoving ? Math.floor(playerAnimTime * 8) % 5 : 0;
+  const frameIndex = playerMoving ? Math.floor(playerAnimTime * 14) % 5 : 0;
 
   const sx = frameIndex * SPRITE_FW;
   const sy = row * SPRITE_FH;
