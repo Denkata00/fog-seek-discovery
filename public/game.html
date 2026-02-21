@@ -761,13 +761,32 @@ function drawPixelStump(ctx, x, y, r) {
 // ===== PIXEL-ART CHARACTERS =====
 
 // --- PLAYER SPRITESHEET ---
-const playerSprite = new Image();
-playerSprite.src = 'images/player-sprite.png';
+const playerSpriteRaw = new Image();
+playerSpriteRaw.src = 'images/player-sprite.png';
 let playerSpriteReady = false;
-let SPRITE_FW = 32, SPRITE_FH = 32; // frame size (updated on load)
-playerSprite.onload = function() {
-  SPRITE_FW = Math.floor(playerSprite.width / 5);
-  SPRITE_FH = Math.floor(playerSprite.height / 3);
+let SPRITE_FW = 32, SPRITE_FH = 32;
+
+// Processed sprite with transparent background
+const playerSpriteCanvas = document.createElement('canvas');
+const playerSpriteCtx = playerSpriteCanvas.getContext('2d');
+
+playerSpriteRaw.onload = function() {
+  // Remove white background by making near-white pixels transparent
+  playerSpriteCanvas.width = playerSpriteRaw.width;
+  playerSpriteCanvas.height = playerSpriteRaw.height;
+  playerSpriteCtx.drawImage(playerSpriteRaw, 0, 0);
+  const imgData = playerSpriteCtx.getImageData(0, 0, playerSpriteCanvas.width, playerSpriteCanvas.height);
+  const d = imgData.data;
+  for (let i = 0; i < d.length; i += 4) {
+    // If pixel is near-white, make it transparent
+    if (d[i] > 230 && d[i+1] > 230 && d[i+2] > 230) {
+      d[i+3] = 0;
+    }
+  }
+  playerSpriteCtx.putImageData(imgData, 0, 0);
+
+  SPRITE_FW = Math.floor(playerSpriteRaw.width / 5);
+  SPRITE_FH = Math.floor(playerSpriteRaw.height / 3);
   playerSpriteReady = true;
 };
 
@@ -807,10 +826,10 @@ function drawPixelPlayer(ctx, x, y, t) {
   ctx.imageSmoothingEnabled = false;
   if (playerDir === 'right') {
     ctx.scale(-1, 1);
-    ctx.drawImage(playerSprite, srcX, srcY, SPRITE_FW, SPRITE_FH,
+    ctx.drawImage(playerSpriteCanvas, srcX, srcY, SPRITE_FW, SPRITE_FH,
       -(dx + drawSize), dy, drawSize, drawSize);
   } else {
-    ctx.drawImage(playerSprite, srcX, srcY, SPRITE_FW, SPRITE_FH,
+    ctx.drawImage(playerSpriteCanvas, srcX, srcY, SPRITE_FW, SPRITE_FH,
       dx, dy, drawSize, drawSize);
   }
   ctx.restore();
