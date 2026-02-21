@@ -785,8 +785,10 @@ playerSpriteRaw.onload = function() {
   }
   playerSpriteCtx.putImageData(imgData, 0, 0);
 
-  SPRITE_FW = Math.floor(playerSpriteRaw.width / 5);
-  SPRITE_FH = Math.floor(playerSpriteRaw.height / 3);
+  // Image is 1536x1024, grid is 5 cols x 3 rows
+  // Use exact pixel math to avoid bleed between frames
+  SPRITE_FW = playerSpriteRaw.width / 5;   // 307.2
+  SPRITE_FH = playerSpriteRaw.height / 3;  // 341.333...
   playerSpriteReady = true;
 };
 
@@ -816,8 +818,12 @@ function drawPixelPlayer(ctx, x, y, t) {
   // Pick frame
   const frameIndex = playerMoving ? Math.floor(playerAnimTime * 14) % 5 : 0;
 
-  const srcX = frameIndex * SPRITE_FW;
-  const srcY = row * SPRITE_FH;
+  // Inset source rect by a few px to avoid bleed from neighboring frames
+  const INSET = 4;
+  const srcX = frameIndex * SPRITE_FW + INSET;
+  const srcY = row * SPRITE_FH + INSET;
+  const srcW = SPRITE_FW - INSET * 2;
+  const srcH = SPRITE_FH - INSET * 2;
   const drawSize = 36;
   const dx = Math.round(x - drawSize / 2);
   const dy = Math.round(y - drawSize / 2);
@@ -826,10 +832,10 @@ function drawPixelPlayer(ctx, x, y, t) {
   ctx.imageSmoothingEnabled = false;
   if (playerDir === 'right') {
     ctx.scale(-1, 1);
-    ctx.drawImage(playerSpriteCanvas, srcX, srcY, SPRITE_FW, SPRITE_FH,
+    ctx.drawImage(playerSpriteCanvas, srcX, srcY, srcW, srcH,
       -(dx + drawSize), dy, drawSize, drawSize);
   } else {
-    ctx.drawImage(playerSpriteCanvas, srcX, srcY, SPRITE_FW, SPRITE_FH,
+    ctx.drawImage(playerSpriteCanvas, srcX, srcY, srcW, srcH,
       dx, dy, drawSize, drawSize);
   }
   ctx.restore();
