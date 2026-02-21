@@ -766,8 +766,8 @@ playerSprite.src = 'images/player-sprite.png';
 let playerSpriteReady = false;
 let SPRITE_FW = 32, SPRITE_FH = 32; // frame size (updated on load)
 playerSprite.onload = function() {
-  SPRITE_FW = playerSprite.width / 5;
-  SPRITE_FH = playerSprite.height / 3;
+  SPRITE_FW = Math.floor(playerSprite.width / 5);
+  SPRITE_FH = Math.floor(playerSprite.height / 3);
   playerSpriteReady = true;
 };
 
@@ -797,20 +797,21 @@ function drawPixelPlayer(ctx, x, y, t) {
   // Pick frame
   const frameIndex = playerMoving ? Math.floor(playerAnimTime * 14) % 5 : 0;
 
-  const sx = frameIndex * SPRITE_FW;
-  const sy = row * SPRITE_FH;
-  const drawSize = 36; // slightly bigger than a tile
+  const srcX = frameIndex * SPRITE_FW;
+  const srcY = row * SPRITE_FH;
+  const drawSize = 36;
+  const dx = Math.round(x - drawSize / 2);
+  const dy = Math.round(y - drawSize / 2);
 
   ctx.save();
   ctx.imageSmoothingEnabled = false;
   if (playerDir === 'right') {
-    // Flip horizontally
     ctx.scale(-1, 1);
-    ctx.drawImage(playerSprite, sx, sy, SPRITE_FW, SPRITE_FH,
-      -(x + drawSize/2), y - drawSize/2, drawSize, drawSize);
+    ctx.drawImage(playerSprite, srcX, srcY, SPRITE_FW, SPRITE_FH,
+      -(dx + drawSize), dy, drawSize, drawSize);
   } else {
-    ctx.drawImage(playerSprite, sx, sy, SPRITE_FW, SPRITE_FH,
-      x - drawSize/2, y - drawSize/2, drawSize, drawSize);
+    ctx.drawImage(playerSprite, srcX, srcY, SPRITE_FW, SPRITE_FH,
+      dx, dy, drawSize, drawSize);
   }
   ctx.restore();
 }
