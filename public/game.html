@@ -766,11 +766,45 @@ playerSpriteRaw.src = 'images/player-sprite.png';
 let playerSpriteReady = false;
 
 // Each frame stored as its own canvas: spriteFrames[row][col]
-const spriteFrames = [[],[],[]]; // 3 rows, 5 cols each
-const SPRITE_DRAW_SIZE = 36; // display size on screen
+// Row 0 = down, Row 1 = left (mirrored for right), Row 2 = up
+const spriteFrames = [[], [], []]; // 3 rows, 5 cols each
+const SPRITE_COLS = 5;
+const SPRITE_ROWS = 3;
+const SPRITE_DRAW_SIZE = 40; // display size on screen
+const SPRITE_ANIM_SPEED = 8; // frames per second
 
 playerSpriteRaw.onload = function() {
-  console.log('Player sprite loaded:', playerSpriteRaw.width, 'x', playerSpriteRaw.height);
+  const imgW = playerSpriteRaw.width;
+  const imgH = playerSpriteRaw.height;
+  const fw = imgW / SPRITE_COLS;
+  const fh = imgH / SPRITE_ROWS;
+  console.log('Sprite loaded:', imgW, 'x', imgH, '→ frame:', fw, 'x', fh);
+
+  // Draw full image to temp canvas for white-bg removal
+  const tmp = document.createElement('canvas');
+  tmp.width = imgW; tmp.height = imgH;
+  const tctx = tmp.getContext('2d');
+  tctx.drawImage(playerSpriteRaw, 0, 0);
+  const imgData = tctx.getImageData(0, 0, imgW, imgH);
+  const px = imgData.data;
+  for (let i = 0; i < px.length; i += 4) {
+    if (px[i] > 230 && px[i+1] > 230 && px[i+2] > 230) {
+      px[i+3] = 0; // make white pixels transparent
+    }
+  }
+  tctx.putImageData(imgData, 0, 0);
+
+  // Extract each frame into its own canvas
+  for (let row = 0; row < SPRITE_ROWS; row++) {
+    for (let col = 0; col < SPRITE_COLS; col++) {
+      const fc = document.createElement('canvas');
+      fc.width = fw; fc.height = fh;
+      const fctx2 = fc.getContext('2d');
+      fctx2.drawImage(tmp, col * fw, row * fh, fw, fh, 0, 0, fw, fh);
+      spriteFrames[row][col] = fc;
+    }
+  }
+
   playerSpriteReady = true;
 };
 
@@ -792,14 +826,38 @@ function drawPixelPlayer(ctx, x, y, t) {
 
   if (!playerSpriteReady) return;
 
+  // Pick row: down=0, left/right=1, up=2
+  let row = 0;
+  if (playerDir === 'left' || playerDir === 'right') row = 1;
+  else if (playerDir === 'up') row = 2;
+
+  // Pick column: animate when moving, idle frame 0 when still
+  let col = 0;
+  if (playerMoving) {
+    col = Math.floor(playerAnimTime * SPRITE_ANIM_SPEED) % SPRITE_COLS;
+  }
+
+  const frame = spriteFrames[row][col];
+  if (!frame) return;
+
   const drawSize = SPRITE_DRAW_SIZE;
   const dx = Math.round(x - drawSize / 2);
   const dy = Math.round(y - drawSize / 2);
 
   ctx.save();
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(playerSpriteRaw, 0, 0, playerSpriteRaw.width, playerSpriteRaw.height,
-    dx, dy, drawSize, drawSize);
+
+  if (playerDir === 'right') {
+    // Mirror horizontally for right-facing
+    ctx.translate(x, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(frame, 0, 0, frame.width, frame.height,
+      -drawSize / 2, dy, drawSize, drawSize);
+  } else {
+    ctx.drawImage(frame, 0, 0, frame.width, frame.height,
+      dx, dy, drawSize, drawSize);
+  }
+
   ctx.restore();
 }
 
