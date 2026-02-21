@@ -214,14 +214,12 @@
   .score-label { font-size:11px; color:hsl(218 20% 50%); margin-top:4px; }
 
 
-  /* ===== MINIMAP ===== */
-  #minimap {
-    position:absolute; bottom:16px; left:16px; z-index:10;
-    width:120px; height:90px; border-radius:8px; overflow:hidden;
-    border:1px solid rgba(13,206,186,0.25);
-    background:rgba(5,10,18,0.8);
+  /* ===== COMPASS ===== */
+  #compass {
+    position:absolute; bottom:20px; left:20px; z-index:10;
+    width:72px; height:72px; pointer-events:none;
   }
-  #minimap canvas { width:100%; height:100%; }
+  #compass canvas { width:100%; height:100%; }
 
 </style>
 </head>
@@ -288,8 +286,8 @@
 </div>
 <button class="e-mobile" id="btn-e">E</button>
 
-<!-- ===== MINIMAP ===== -->
-<div id="minimap"><canvas id="minimapCanvas"></canvas></div>
+<!-- ===== COMPASS ===== -->
+<div id="compass"><canvas id="compassCanvas"></canvas></div>
 
 
 <!-- ===== START SCREEN ===== -->
@@ -1105,8 +1103,8 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const fogCanvas = document.createElement('canvas');
 const fctx = fogCanvas.getContext('2d');
-const minimapCanvas = document.getElementById('minimapCanvas');
-const mctx = minimapCanvas.getContext('2d');
+const compassCanvas = document.getElementById('compassCanvas');
+const cctx = compassCanvas.getContext('2d');
 
 let phase = 'start'; // 'start' | 'playing' | 'won' | 'lost'
 let player = {x: 1200, y: 900};
@@ -1132,8 +1130,8 @@ function resize() {
   canvas.height = window.innerHeight;
   fogCanvas.width = canvas.width;
   fogCanvas.height = canvas.height;
-  minimapCanvas.width = 120;
-  minimapCanvas.height = 90;
+  compassCanvas.width = 144;
+  compassCanvas.height = 144;
 }
 resize();
 window.addEventListener('resize', resize);
@@ -1160,7 +1158,7 @@ function startGame() {
   document.getElementById('won-screen').style.display = 'none';
   document.getElementById('lost-screen').style.display = 'none';
   document.getElementById('hud').style.display = 'block';
-  document.getElementById('minimap').style.display = 'block';
+  document.getElementById('compass').style.display = 'block';
   closeDialog();
   cancelAnimationFrame(rafId);
   rafId = requestAnimationFrame(loop);
@@ -1173,13 +1171,13 @@ function showStart() {
   document.getElementById('won-screen').style.display = 'none';
   document.getElementById('lost-screen').style.display = 'none';
   document.getElementById('hud').style.display = 'none';
-  document.getElementById('minimap').style.display = 'none';
+  document.getElementById('compass').style.display = 'none';
   closeDialog();
 }
 
-// Initially hide HUD and minimap
+// Initially hide HUD and compass
 document.getElementById('hud').style.display = 'none';
-document.getElementById('minimap').style.display = 'none';
+document.getElementById('compass').style.display = 'none';
 
 // ============================================================
 //  INTERACT
@@ -1292,40 +1290,78 @@ function endGame(result) {
 }
 
 // ============================================================
-//  MINIMAP
+//  COMPASS
 // ============================================================
-function drawMinimap() {
-  const scaleX = 120 / MAP_W, scaleY = 90 / MAP_H;
-  mctx.clearRect(0, 0, 120, 90);
-  // Zone fills - brighter colors matching the pixel-art palette
-  const zones = [
-    {x:0,y:0,w:60,h:45,c:'#3a6a30'},   // Forest - rich green
-    {x:60,y:0,w:60,h:45,c:'#6a8040'},  // Village - sandy green
-    {x:0,y:45,w:60,h:45,c:'#484e44'},  // Ruins - grey-green
-    {x:60,y:45,w:60,h:45,c:'#507838'}, // Field - bright green
-  ];
-  zones.forEach(z => { mctx.fillStyle = z.c; mctx.fillRect(z.x, z.y, z.w, z.h); });
-  // Zone border lines
-  mctx.strokeStyle = '#2a2010'; mctx.lineWidth = 1;
-  mctx.beginPath(); mctx.moveTo(60,0); mctx.lineTo(60,90); mctx.stroke();
-  mctx.beginPath(); mctx.moveTo(0,45); mctx.lineTo(120,45); mctx.stroke();
-  // Hidden people
-  hiddenPeople.forEach(p => {
-    if (p.found) { mctx.fillStyle = '#44ff88'; }
-    else { mctx.fillStyle = '#f5c84288'; }
-    mctx.beginPath();
-    mctx.arc(p.x * scaleX, p.y * scaleY, 2, 0, Math.PI*2);
-    mctx.fill();
+function drawCompass() {
+  const size = 144, cx = size/2, cy = size/2, r = 54;
+  cctx.clearRect(0, 0, size, size);
+
+  // Background circle
+  cctx.beginPath(); cctx.arc(cx, cy, r+8, 0, Math.PI*2);
+  cctx.fillStyle = 'rgba(5,10,18,0.85)'; cctx.fill();
+  cctx.strokeStyle = 'rgba(13,206,186,0.3)'; cctx.lineWidth = 1.5; cctx.stroke();
+
+  // Inner ring
+  cctx.beginPath(); cctx.arc(cx, cy, r-2, 0, Math.PI*2);
+  cctx.strokeStyle = 'rgba(13,206,186,0.12)'; cctx.lineWidth = 1; cctx.stroke();
+
+  // Tick marks
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2 - Math.PI/2;
+    const inner = i % 2 === 0 ? r - 14 : r - 8;
+    cctx.beginPath();
+    cctx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
+    cctx.lineTo(cx + Math.cos(a) * (r - 2), cy + Math.sin(a) * (r - 2));
+    cctx.strokeStyle = i % 2 === 0 ? 'rgba(13,206,186,0.6)' : 'rgba(13,206,186,0.25)';
+    cctx.lineWidth = i % 2 === 0 ? 2 : 1;
+    cctx.stroke();
+  }
+
+  // Cardinal labels
+  const labels = ['N','E','S','W'];
+  const angles = [-Math.PI/2, 0, Math.PI/2, Math.PI];
+  cctx.font = 'bold 11px Cinzel, serif';
+  cctx.textAlign = 'center'; cctx.textBaseline = 'middle';
+  labels.forEach((l, i) => {
+    const a = angles[i];
+    const lx = cx + Math.cos(a) * (r + 1);
+    const ly = cy + Math.sin(a) * (r + 1);
+    cctx.fillStyle = l === 'N' ? '#ff4444' : 'rgba(13,206,186,0.5)';
+    cctx.fillText(l, lx, ly);
   });
-  // NPCs
-  NPCS.forEach(n => {
-    mctx.fillStyle = '#bb99ff88';
-    mctx.beginPath(); mctx.arc(n.x*scaleX, n.y*scaleY, 1.5, 0, Math.PI*2); mctx.fill();
-  });
-  // Player
-  mctx.fillStyle = '#0dceba';
-  mctx.beginPath(); mctx.arc(player.x*scaleX, player.y*scaleY, 3, 0, Math.PI*2); mctx.fill();
-  mctx.strokeStyle = '#0dceba44'; mctx.lineWidth = 0.5; mctx.stroke();
+
+  // Player direction needle
+  const dirAngles = { up: -Math.PI/2, right: 0, down: Math.PI/2, left: Math.PI };
+  const needleAngle = dirAngles[playerDir] || -Math.PI/2;
+
+  // North needle (red)
+  cctx.save(); cctx.translate(cx, cy); cctx.rotate(-Math.PI/2);
+  cctx.beginPath(); cctx.moveTo(0, -r+18); cctx.lineTo(-4, 6); cctx.lineTo(4, 6); cctx.closePath();
+  cctx.fillStyle = 'rgba(255,68,68,0.7)'; cctx.fill();
+  cctx.restore();
+
+  // South needle (teal)
+  cctx.save(); cctx.translate(cx, cy); cctx.rotate(Math.PI/2);
+  cctx.beginPath(); cctx.moveTo(0, -r+18); cctx.lineTo(-4, 6); cctx.lineTo(4, 6); cctx.closePath();
+  cctx.fillStyle = 'rgba(13,206,186,0.35)'; cctx.fill();
+  cctx.restore();
+
+  // Player facing indicator (bright dot)
+  const fx = cx + Math.cos(needleAngle) * (r - 20);
+  const fy = cy + Math.sin(needleAngle) * (r - 20);
+  cctx.beginPath(); cctx.arc(fx, fy, 4, 0, Math.PI*2);
+  cctx.fillStyle = '#0dceba'; cctx.shadowColor = '#0dceba'; cctx.shadowBlur = 8; cctx.fill();
+  cctx.shadowBlur = 0;
+
+  // Center dot
+  cctx.beginPath(); cctx.arc(cx, cy, 3, 0, Math.PI*2);
+  cctx.fillStyle = 'rgba(13,206,186,0.5)'; cctx.fill();
+
+  // Zone label
+  const zone = ZONE_NAMES[getZone(player.x, player.y)];
+  cctx.font = '9px Inter, sans-serif';
+  cctx.fillStyle = 'rgba(180,195,210,0.5)';
+  cctx.fillText(zone, cx, cy + 18);
 }
 
 // ============================================================
@@ -1452,9 +1488,9 @@ function loop(ts) {
   // ---- FOG (2D texture-based) ----
   fctx.clearRect(0, 0, W, H);
 
-  // Tile the fog texture across the screen
+  // Tile the fog texture across the screen (darker)
   if (fogTexReady) {
-    fctx.globalAlpha = 0.85;
+    fctx.globalAlpha = 0.93;
     const tw = fogTexImg.width, th = fogTexImg.height;
     for (let fx = 0; fx < W; fx += tw) {
       for (let fy = 0; fy < H; fy += th) {
@@ -1462,17 +1498,20 @@ function loop(ts) {
       }
     }
     fctx.globalAlpha = 1.0;
+    // Extra dark tint on top
+    fctx.fillStyle = 'rgba(3,6,12,0.4)';
+    fctx.fillRect(0, 0, W, H);
   } else {
-    fctx.fillStyle = 'rgba(8,14,26,0.88)';
+    fctx.fillStyle = 'rgba(3,6,12,0.95)';
     fctx.fillRect(0, 0, W, H);
   }
 
   // Cut out vision hole
   fctx.globalCompositeOperation = 'destination-out';
-  const vg = fctx.createRadialGradient(px, py, 0, px, py, VISION_R * 1.2);
+  const vg = fctx.createRadialGradient(px, py, 0, px, py, VISION_R * 1.3);
   vg.addColorStop(0, 'rgba(0,0,0,1)');
-  vg.addColorStop(0.55, 'rgba(0,0,0,0.9)');
-  vg.addColorStop(0.8, 'rgba(0,0,0,0.4)');
+  vg.addColorStop(0.6, 'rgba(0,0,0,1)');
+  vg.addColorStop(0.8, 'rgba(0,0,0,0.5)');
   vg.addColorStop(1, 'rgba(0,0,0,0)');
   fctx.fillStyle = vg; fctx.fillRect(0, 0, W, H);
   fctx.globalCompositeOperation = 'source-over';
@@ -1497,8 +1536,8 @@ function loop(ts) {
     ctx.fillText('✓', sx, sy-22); ctx.restore();
   });
 
-  // Minimap
-  if (phase === 'playing') drawMinimap();
+  // Compass
+  if (phase === 'playing') drawCompass();
 
   rafId = requestAnimationFrame(loop);
 }
