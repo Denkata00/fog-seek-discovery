@@ -764,31 +764,81 @@ function drawPixelStump(ctx, x, y, r) {
 const playerSpriteRaw = new Image();
 playerSpriteRaw.src = 'images/player-sprite.png';
 let playerSpriteReady = false;
-let SPRITE_FW = 32, SPRITE_FH = 32;
 
-// Processed sprite with transparent background
-const playerSpriteCanvas = document.createElement('canvas');
-const playerSpriteCtx = playerSpriteCanvas.getContext('2d');
+// Each frame stored as its own canvas: spriteFrames[row][col]
+const spriteFrames = [[],[],[]]; // 3 rows, 5 cols each
+const SPRITE_DRAW_SIZE = 36; // display size on screen
 
 playerSpriteRaw.onload = function() {
-  // Remove white background by making near-white pixels transparent
-  playerSpriteCanvas.width = playerSpriteRaw.width;
-  playerSpriteCanvas.height = playerSpriteRaw.height;
-  playerSpriteCtx.drawImage(playerSpriteRaw, 0, 0);
-  const imgData = playerSpriteCtx.getImageData(0, 0, playerSpriteCanvas.width, playerSpriteCanvas.height);
+  const W = playerSpriteRaw.width;   // 1536
+  const H = playerSpriteRaw.height;  // 1024
+  const COLS = 5, ROWS = 3;
+
+  // Draw full sheet onto temp canvas & remove white background
+  const tmp = document.createElement('canvas');
+  tmp.width = W; tmp.height = H;
+  const tctx = tmp.getContext('2d');
+  tctx.drawImage(playerSpriteRaw, 0, 0);
+  const imgData = tctx.getImageData(0, 0, W, H);
   const d = imgData.data;
   for (let i = 0; i < d.length; i += 4) {
-    // If pixel is near-white, make it transparent
     if (d[i] > 230 && d[i+1] > 230 && d[i+2] > 230) {
       d[i+3] = 0;
     }
   }
-  playerSpriteCtx.putImageData(imgData, 0, 0);
+  tctx.putImageData(imgData, 0, 0);
 
-  // Image is 1536x1024, grid is 5 cols x 3 rows
-  // Use exact pixel math to avoid bleed between frames
-  SPRITE_FW = playerSpriteRaw.width / 5;   // 307.2
-  SPRITE_FH = playerSpriteRaw.height / 3;  // 341.333...
+  // Nominal cell size (may be fractional — that's fine, we use it to locate cells)
+  const cellW = W / COLS;
+  const cellH = H / ROWS;
+
+  // For each cell, find the tight bounding box of non-transparent pixels,
+  // then extract that into its own canvas, centered in a square frame.
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      // Scan cell boundaries (round to avoid fractional coords)
+      const cx0 = Math.round(col * cellW);
+      const cy0 = Math.round(row * cellH);
+      const cx1 = Math.round((col + 1) * cellW);
+      const cy1 = Math.round((row + 1) * cellH);
+      const cw = cx1 - cx0;
+      const ch = cy1 - cy0;
+
+      // Get pixel data for just this cell
+      const cellData = tctx.getImageData(cx0, cy0, cw, ch);
+      const cd = cellData.data;
+
+      // Find bounding box of non-transparent pixels
+      let minX = cw, minY = ch, maxX = 0, maxY = 0;
+      for (let py = 0; py < ch; py++) {
+        for (let px = 0; px < cw; px++) {
+          const alpha = cd[(py * cw + px) * 4 + 3];
+          if (alpha > 10) {
+            if (px < minX) minX = px;
+            if (px > maxX) maxX = px;
+            if (py < minY) minY = py;
+            if (py > maxY) maxY = py;
+          }
+        }
+      }
+
+      // Create a square canvas for this frame
+      const bw = maxX - minX + 1;
+      const bh = maxY - minY + 1;
+      const size = Math.max(bw, bh);
+      const fc = document.createElement('canvas');
+      fc.width = size; fc.height = size;
+      const fctx2 = fc.getContext('2d');
+      // Center the character in the square
+      const offX = Math.round((size - bw) / 2);
+      const offY = Math.round((size - bh) / 2);
+      fctx2.drawImage(tmp, cx0 + minX, cy0 + minY, bw, bh, offX, offY, bw, bh);
+
+      spriteFrames[row][col] = fc;
+    }
+  }
+
+  console.log('Sprite frames extracted:', ROWS, 'rows x', COLS, 'cols');
   playerSpriteReady = true;
 };
 
@@ -808,7 +858,7 @@ function drawPixelPlayer(ctx, x, y, t) {
   ctx.fillStyle = 'rgba(0,0,0,0.3)';
   ctx.beginPath(); ctx.ellipse(x, y+14, 7, 3, 0, 0, Math.PI*2); ctx.fill();
 
-  if (!playerSpriteReady) return; // fallback: just glow until loaded
+  if (!playerSpriteReady) return;
 
   // Pick row: 0=down, 1=side, 2=up
   let row = 0;
@@ -817,14 +867,10 @@ function drawPixelPlayer(ctx, x, y, t) {
 
   // Pick frame
   const frameIndex = playerMoving ? Math.floor(playerAnimTime * 14) % 5 : 0;
+  const frame = spriteFrames[row][frameIndex];
+  if (!frame) return;
 
-  // Inset source rect by a few px to avoid bleed from neighboring frames
-  const INSET = 4;
-  const srcX = frameIndex * SPRITE_FW + INSET;
-  const srcY = row * SPRITE_FH + INSET;
-  const srcW = SPRITE_FW - INSET * 2;
-  const srcH = SPRITE_FH - INSET * 2;
-  const drawSize = 36;
+  const drawSize = SPRITE_DRAW_SIZE;
   const dx = Math.round(x - drawSize / 2);
   const dy = Math.round(y - drawSize / 2);
 
@@ -832,10 +878,10 @@ function drawPixelPlayer(ctx, x, y, t) {
   ctx.imageSmoothingEnabled = false;
   if (playerDir === 'right') {
     ctx.scale(-1, 1);
-    ctx.drawImage(playerSpriteCanvas, srcX, srcY, srcW, srcH,
+    ctx.drawImage(frame, 0, 0, frame.width, frame.height,
       -(dx + drawSize), dy, drawSize, drawSize);
   } else {
-    ctx.drawImage(playerSpriteCanvas, srcX, srcY, srcW, srcH,
+    ctx.drawImage(frame, 0, 0, frame.width, frame.height,
       dx, dy, drawSize, drawSize);
   }
   ctx.restore();
