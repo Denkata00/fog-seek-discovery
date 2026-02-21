@@ -863,6 +863,65 @@ function drawPixelPlayer(ctx, x, y, t) {
   ctx.restore();
 }
 
+// ===== PIXEL-ART HIDDEN PERSON =====
+function drawPixelHidden(ctx, x, y, t, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.ellipse(x, y+12, 7, 3, 0, 0, Math.PI*2); ctx.fill();
+  // Body
+  ctx.fillStyle = '#d4a840';
+  ctx.fillRect(x-5, y-4, 10, 14);
+  // Head
+  ctx.beginPath(); ctx.arc(x, y-8, 6, 0, Math.PI*2);
+  ctx.fillStyle = '#e8c050'; ctx.fill();
+  // Eyes
+  ctx.fillStyle = '#3a2a10';
+  ctx.fillRect(x-3, y-9, 2, 2);
+  ctx.fillRect(x+1, y-9, 2, 2);
+  // Glow pulse
+  const pulse = 0.3 + Math.sin(t * 3) * 0.15;
+  const glow = ctx.createRadialGradient(x, y, 0, x, y, 20);
+  glow.addColorStop(0, `rgba(245,200,66,${pulse})`);
+  glow.addColorStop(1, 'rgba(245,200,66,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(x, y, 20, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+// ===== PIXEL-ART NPC =====
+function drawPixelNPC(ctx, x, y, t, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.ellipse(x, y+12, 7, 3, 0, 0, Math.PI*2); ctx.fill();
+  // Body (purple robe)
+  ctx.fillStyle = '#7744aa';
+  ctx.fillRect(x-6, y-4, 12, 16);
+  // Robe detail
+  ctx.fillStyle = '#9966cc';
+  ctx.fillRect(x-4, y-2, 8, 12);
+  // Head
+  ctx.beginPath(); ctx.arc(x, y-8, 6, 0, Math.PI*2);
+  ctx.fillStyle = '#c8b8a0'; ctx.fill();
+  // Hood
+  ctx.beginPath(); ctx.arc(x, y-9, 7, Math.PI, 0);
+  ctx.fillStyle = '#6633aa'; ctx.fill();
+  // Eyes
+  ctx.fillStyle = '#bb99ff';
+  ctx.fillRect(x-3, y-9, 2, 2);
+  ctx.fillRect(x+1, y-9, 2, 2);
+  // Glow
+  const glow = ctx.createRadialGradient(x, y, 0, x, y, 22);
+  glow.addColorStop(0, 'rgba(153,102,255,0.2)');
+  glow.addColorStop(1, 'rgba(153,102,255,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(x, y, 22, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
 // ===== ADDITIONAL OBJECTS =====
 
 function drawWell(ctx, x, y) {
