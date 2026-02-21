@@ -760,9 +760,23 @@ function drawPixelStump(ctx, x, y, r) {
 
 // ===== PIXEL-ART CHARACTERS =====
 
+// --- PLAYER SPRITESHEET ---
+const playerSprite = new Image();
+playerSprite.src = 'images/player-sprite.png';
+let playerSpriteReady = false;
+let SPRITE_FW = 32, SPRITE_FH = 32; // frame size (updated on load)
+playerSprite.onload = function() {
+  SPRITE_FW = playerSprite.width / 5;
+  SPRITE_FH = playerSprite.height / 3;
+  playerSpriteReady = true;
+};
+
+let playerDir = 'down'; // 'down' | 'up' | 'left' | 'right'
+let playerMoving = false;
+let playerAnimTime = 0;
+
 function drawPixelPlayer(ctx, x, y, t) {
-  const bob = Math.floor(t * 6) % 2 === 0 ? 0 : -1;
-  x = Math.round(x); y = Math.round(y) + bob;
+  x = Math.round(x); y = Math.round(y);
 
   // Glow
   const g = ctx.createRadialGradient(x, y+4, 0, x, y+4, 22);
@@ -773,29 +787,32 @@ function drawPixelPlayer(ctx, x, y, t) {
   ctx.fillStyle = 'rgba(0,0,0,0.3)';
   ctx.beginPath(); ctx.ellipse(x, y+14, 7, 3, 0, 0, Math.PI*2); ctx.fill();
 
-  // Legs (2px wide pixels)
-  const lk = Math.floor(t * 6) % 4; // walk cycle
-  ctx.fillStyle = '#0a7a6a';
-  ctx.fillRect(x-4, y+8, 3, 6 + (lk<2?2:0));
-  ctx.fillRect(x+1, y+8, 3, 6 + (lk>=2?2:0));
+  if (!playerSpriteReady) return; // fallback: just glow until loaded
 
-  // Body (blue-teal tunic)
-  ctx.fillStyle = '#0dceba'; ctx.fillRect(x-5, y, 10, 10);
-  ctx.fillStyle = '#0ab8a8'; ctx.fillRect(x-5, y+5, 10, 5); // lower darker
-  ctx.fillStyle = '#08a090'; ctx.fillRect(x-5, y, 2, 10); // left shadow
-  // Belt
-  ctx.fillStyle = '#0a5a50'; ctx.fillRect(x-5, y+7, 10, 2);
+  // Pick row: 0=down, 1=side, 2=up
+  let row = 0;
+  if (playerDir === 'up') row = 2;
+  else if (playerDir === 'left' || playerDir === 'right') row = 1;
 
-  // Head
-  ctx.fillStyle = '#e8c890'; ctx.fillRect(x-4, y-8, 8, 8);
-  // Hair
-  ctx.fillStyle = '#2a1a0a'; ctx.fillRect(x-4, y-8, 8, 3);
-  ctx.fillRect(x-5, y-7, 2, 4); // side hair
-  ctx.fillRect(x+3, y-7, 2, 4);
-  // Eyes
-  ctx.fillStyle = '#0dceba'; ctx.fillRect(x-2, y-4, 2, 2); ctx.fillRect(x+1, y-4, 2, 2);
-  // Shine on eye
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(x-1, y-4, 1, 1); ctx.fillRect(x+2, y-4, 1, 1);
+  // Pick frame
+  const frameIndex = playerMoving ? Math.floor(playerAnimTime * 8) % 5 : 0;
+
+  const sx = frameIndex * SPRITE_FW;
+  const sy = row * SPRITE_FH;
+  const drawSize = 36; // slightly bigger than a tile
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  if (playerDir === 'right') {
+    // Flip horizontally
+    ctx.scale(-1, 1);
+    ctx.drawImage(playerSprite, sx, sy, SPRITE_FW, SPRITE_FH,
+      -(x + drawSize/2), y - drawSize/2, drawSize, drawSize);
+  } else {
+    ctx.drawImage(playerSprite, sx, sy, SPRITE_FW, SPRITE_FH,
+      x - drawSize/2, y - drawSize/2, drawSize, drawSize);
+  }
+  ctx.restore();
 }
 
 function drawPixelNPC(ctx, x, y, t, alpha) {
@@ -1293,6 +1310,17 @@ function loop(ts) {
     if (keys.has('arrowup') || keys.has('w')) dy -= 1;
     if (keys.has('arrowdown') || keys.has('s')) dy += 1;
     if (dx !== 0 && dy !== 0) { dx *= 0.707; dy *= 0.707; }
+
+    // Update player direction & animation
+    playerMoving = (dx !== 0 || dy !== 0);
+    if (playerMoving) {
+      playerAnimTime += dt;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        playerDir = dx > 0 ? 'right' : 'left';
+      } else {
+        playerDir = dy > 0 ? 'down' : 'up';
+      }
+    }
     const nx = player.x + dx * PLAYER_SPEED;
     const ny = player.y + dy * PLAYER_SPEED;
     if (nx > 15 && nx < MAP_W-15 && !hasCollision(nx, player.y)) player.x = nx;
