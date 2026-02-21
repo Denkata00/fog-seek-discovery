@@ -770,75 +770,7 @@ const spriteFrames = [[],[],[]]; // 3 rows, 5 cols each
 const SPRITE_DRAW_SIZE = 36; // display size on screen
 
 playerSpriteRaw.onload = function() {
-  const W = playerSpriteRaw.width;   // 1536
-  const H = playerSpriteRaw.height;  // 1024
-  const COLS = 5, ROWS = 3;
-
-  // Draw full sheet onto temp canvas & remove white background
-  const tmp = document.createElement('canvas');
-  tmp.width = W; tmp.height = H;
-  const tctx = tmp.getContext('2d');
-  tctx.drawImage(playerSpriteRaw, 0, 0);
-  const imgData = tctx.getImageData(0, 0, W, H);
-  const d = imgData.data;
-  for (let i = 0; i < d.length; i += 4) {
-    if (d[i] > 230 && d[i+1] > 230 && d[i+2] > 230) {
-      d[i+3] = 0;
-    }
-  }
-  tctx.putImageData(imgData, 0, 0);
-
-  // Nominal cell size (may be fractional — that's fine, we use it to locate cells)
-  const cellW = W / COLS;
-  const cellH = H / ROWS;
-
-  // For each cell, find the tight bounding box of non-transparent pixels,
-  // then extract that into its own canvas, centered in a square frame.
-  for (let row = 0; row < ROWS; row++) {
-    for (let col = 0; col < COLS; col++) {
-      // Scan cell boundaries (round to avoid fractional coords)
-      const cx0 = Math.round(col * cellW);
-      const cy0 = Math.round(row * cellH);
-      const cx1 = Math.round((col + 1) * cellW);
-      const cy1 = Math.round((row + 1) * cellH);
-      const cw = cx1 - cx0;
-      const ch = cy1 - cy0;
-
-      // Get pixel data for just this cell
-      const cellData = tctx.getImageData(cx0, cy0, cw, ch);
-      const cd = cellData.data;
-
-      // Find bounding box of non-transparent pixels
-      let minX = cw, minY = ch, maxX = 0, maxY = 0;
-      for (let py = 0; py < ch; py++) {
-        for (let px = 0; px < cw; px++) {
-          const alpha = cd[(py * cw + px) * 4 + 3];
-          if (alpha > 10) {
-            if (px < minX) minX = px;
-            if (px > maxX) maxX = px;
-            if (py < minY) minY = py;
-            if (py > maxY) maxY = py;
-          }
-        }
-      }
-
-      // Create a square canvas for this frame
-      const bw = maxX - minX + 1;
-      const bh = maxY - minY + 1;
-      const size = Math.max(bw, bh);
-      const fc = document.createElement('canvas');
-      fc.width = size; fc.height = size;
-      const fctx2 = fc.getContext('2d');
-      // Center the character in the square
-      const offX = Math.round((size - bw) / 2);
-      const offY = Math.round((size - bh) / 2);
-      fctx2.drawImage(tmp, cx0 + minX, cy0 + minY, bw, bh, offX, offY, bw, bh);
-
-      spriteFrames[row][col] = fc;
-    }
-  }
-
-  console.log('Sprite frames extracted:', ROWS, 'rows x', COLS, 'cols');
+  console.log('Player sprite loaded:', playerSpriteRaw.width, 'x', playerSpriteRaw.height);
   playerSpriteReady = true;
 };
 
@@ -860,95 +792,14 @@ function drawPixelPlayer(ctx, x, y, t) {
 
   if (!playerSpriteReady) return;
 
-  // Pick row: 0=down, 1=side, 2=up
-  let row = 0;
-  if (playerDir === 'up') row = 2;
-  else if (playerDir === 'left' || playerDir === 'right') row = 1;
-
-  // Pick frame
-  const frameIndex = playerMoving ? Math.floor(playerAnimTime * 14) % 5 : 0;
-  const frame = spriteFrames[row][frameIndex];
-  if (!frame) return;
-
   const drawSize = SPRITE_DRAW_SIZE;
   const dx = Math.round(x - drawSize / 2);
   const dy = Math.round(y - drawSize / 2);
 
   ctx.save();
   ctx.imageSmoothingEnabled = false;
-  if (playerDir === 'right') {
-    ctx.scale(-1, 1);
-    ctx.drawImage(frame, 0, 0, frame.width, frame.height,
-      -(dx + drawSize), dy, drawSize, drawSize);
-  } else {
-    ctx.drawImage(frame, 0, 0, frame.width, frame.height,
-      dx, dy, drawSize, drawSize);
-  }
-  ctx.restore();
-}
-
-function drawPixelNPC(ctx, x, y, t, alpha) {
-  ctx.save(); ctx.globalAlpha = alpha;
-  x = Math.round(x); y = Math.round(y);
-  const bob = Math.sin(t * 1.5) * 1.5;
-  y += bob;
-
-  // Glow
-  const g = ctx.createRadialGradient(x, y+4, 0, x, y+4, 16);
-  g.addColorStop(0, 'rgba(153,102,255,0.4)'); g.addColorStop(1, 'rgba(153,102,255,0)');
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y+4, 16, 0, Math.PI*2); ctx.fill();
-
-  // Shadow
-  ctx.globalAlpha = alpha * 0.5;
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.beginPath(); ctx.ellipse(x, y+14, 6, 2.5, 0, 0, Math.PI*2); ctx.fill();
-  ctx.globalAlpha = alpha;
-
-  // Robe legs
-  ctx.fillStyle = '#6040a0'; ctx.fillRect(x-5, y+8, 11, 7);
-  ctx.fillStyle = '#4a3080'; ctx.fillRect(x-5, y+8, 2, 7); // shadow
-
-  // Body / robe
-  ctx.fillStyle = '#7748c8'; ctx.fillRect(x-5, y, 10, 10);
-  ctx.fillStyle = '#5a38a0'; ctx.fillRect(x-5, y, 2, 10); // shadow
-  ctx.fillStyle = '#9968e8'; ctx.fillRect(x+1, y, 3, 10); // highlight
-  // Robe detail
-  ctx.fillStyle = '#4a2888'; ctx.fillRect(x-1, y+2, 2, 8); // center line
-
-  // Head
-  ctx.fillStyle = '#d4b080'; ctx.fillRect(x-4, y-8, 8, 8);
-  // Hood
-  ctx.fillStyle = '#5030a0'; ctx.fillRect(x-5, y-9, 10, 4);
-  ctx.fillRect(x-4, y-8, 2, 3);
-  ctx.fillRect(x+3, y-8, 2, 3);
-  // Eyes
-  ctx.fillStyle = '#cc88ff'; ctx.fillRect(x-2, y-4, 2, 2); ctx.fillRect(x+1, y-4, 2, 2);
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(x-1, y-4, 1, 1); ctx.fillRect(x+2, y-4, 1, 1);
-
-  ctx.restore();
-}
-
-function drawPixelHidden(ctx, x, y, t, alpha) {
-  ctx.save(); ctx.globalAlpha = alpha;
-  x = Math.round(x); y = Math.round(y);
-
-  // Glow
-  const g = ctx.createRadialGradient(x, y+4, 0, x, y+4, 18);
-  g.addColorStop(0, 'rgba(245,200,66,0.45)'); g.addColorStop(1, 'rgba(245,200,66,0)');
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y+4, 18, 0, Math.PI*2); ctx.fill();
-
-  // Crouched figure (hiding)
-  ctx.fillStyle = '#b87820'; // pants
-  ctx.fillRect(x-4, y+5, 8, 6);
-  ctx.fillStyle = '#d89030'; // shirt
-  ctx.fillRect(x-4, y-2, 8, 8);
-  ctx.fillStyle = '#c07828'; ctx.fillRect(x-4, y-2, 2, 8); // shadow
-  // Head (looking down/away)
-  ctx.fillStyle = '#e8c080'; ctx.fillRect(x-4, y-9, 7, 7);
-  // Hair
-  ctx.fillStyle = '#3a2010'; ctx.fillRect(x-4, y-9, 7, 3);
-  ctx.fillRect(x+2, y-8, 2, 5); // side
-
+  ctx.drawImage(playerSpriteRaw, 0, 0, playerSpriteRaw.width, playerSpriteRaw.height,
+    dx, dy, drawSize, drawSize);
   ctx.restore();
 }
 
