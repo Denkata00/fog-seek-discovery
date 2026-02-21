@@ -840,9 +840,12 @@ function drawPixelPlayer(ctx, x, y, t) {
   const frame = spriteFrames[row][col];
   if (!frame) return;
 
-  const drawSize = SPRITE_DRAW_SIZE;
-  const dx = Math.round(x - drawSize / 2);
-  const dy = Math.round(y - drawSize / 2);
+  const fw = spriteFrames[0][0].width;
+  const fh = spriteFrames[0][0].height;
+  const drawW = SPRITE_DRAW_SIZE;
+  const drawH = SPRITE_DRAW_SIZE * (fh / fw); // preserve aspect ratio
+  const dx = Math.round(x - drawW / 2);
+  const dy = Math.round(y - drawH + 8); // anchor at feet, slight offset
 
   ctx.save();
   ctx.imageSmoothingEnabled = false;
@@ -852,10 +855,10 @@ function drawPixelPlayer(ctx, x, y, t) {
     ctx.translate(x, 0);
     ctx.scale(-1, 1);
     ctx.drawImage(frame, 0, 0, frame.width, frame.height,
-      -drawSize / 2, dy, drawSize, drawSize);
+      -drawW / 2, dy, drawW, drawH);
   } else {
     ctx.drawImage(frame, 0, 0, frame.width, frame.height,
-      dx, dy, drawSize, drawSize);
+      dx, dy, drawW, drawH);
   }
 
   ctx.restore();
